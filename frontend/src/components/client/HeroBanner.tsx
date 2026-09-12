@@ -15,7 +15,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import "../../app/globals.css";
 
 export default function HeroBanner() {
   const [date, setDate] = useState<Date | undefined>();
@@ -23,7 +22,7 @@ export default function HeroBanner() {
   const [query, setQuery] = useState("");
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 font-sans">
       <div className="relative rounded-[2.5rem] bg-[#0c0d2a] overflow-hidden shadow-2xl border border-white/5">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-radial from-[#662855]/40 via-[#3a194c]/20 to-transparent blur-3xl pointer-events-none -mr-20 -mt-20 transform-gpu" />
         <div className="absolute bottom-0 left-1/3 w-[550px] h-[320px] bg-radial from-[#1e1b4b]/60 via-[#12112d]/20 to-transparent blur-3xl pointer-events-none transform-gpu" />
@@ -48,7 +47,7 @@ export default function HeroBanner() {
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3.5">
-            <button className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-primary to-[#ff4f33] text-white font-semibold text-sm sm:text-base shadow-[0_10px_25px_-5px_rgba(255,87,51,0.45)] hover:shadow-[0_14px_30px_-5px_rgba(255,87,51,0.6)] hover:brightness-105 active:scale-[0.98] transition-all">
+            <button className="group inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm sm:text-base shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:brightness-105 active:scale-[0.98] transition-all">
               <span>Explore Events</span>
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
             </button>
@@ -62,15 +61,15 @@ export default function HeroBanner() {
         <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       </div>
 
-      <div className="relative -mt-10 sm:-mt-12 mx-4 sm:mx-8 md:mx-12 z-20">
-        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-100 p-2 sm:p-2.5">
-          <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 md:gap-0">
-            <div className="md:col-span-4 flex items-center gap-3.5 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="p-2 rounded-xl bg-orange-50 text-primary">
-                <MapPin className="w-5 h-5" />
+      <div className="relative -mt-10 sm:-mt-12 mx-4 sm:mx-8 md:mx-12 z-20 font-sans">
+        <div className="bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-slate-100 p-2 sm:p-2.5">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-0">
+            <div className="flex-1 flex items-center gap-3.5 px-4 py-2.5 rounded-2xl hover:bg-slate-50/80 transition-colors">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <MapPin className="w-5 h-5 stroke-[2.2]" />
               </div>
-              <div className="flex-1 min-w-0">
-                <label className="block text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              <div className="flex-1 min-w-0 font-sans">
+                <label className="block text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                   Location
                 </label>
                 <input
@@ -78,26 +77,28 @@ export default function HeroBanner() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Where are you going?"
-                  className="w-full text-sm font-medium text-slate-800 placeholder:text-slate-400 bg-transparent border-none outline-none focus:ring-0 p-0"
+                  className="w-full text-sm font-medium text-slate-800 placeholder:text-slate-400 bg-transparent border-none outline-none focus:ring-0 p-0 font-sans"
                 />
               </div>
             </div>
 
-            <div className="hidden md:block w-px h-9 bg-slate-200/80" />
+            <div className="hidden md:block w-px h-9 bg-slate-200/80 shrink-0" />
 
-            <div className="md:col-span-3">
+            <div className="flex-1">
               <Popover>
                 <PopoverTrigger>
-                  <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer text-left">
-                    <div className="p-2 rounded-xl bg-orange-50 text-primary">
-                      <CalendarIcon className="w-5 h-5" />
+                  <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl hover:bg-slate-50/80 transition-colors cursor-pointer text-left font-sans">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <CalendarIcon className="w-5 h-5 stroke-[2.2]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="block text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                      <span className="block text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                         When
                       </span>
                       <span
-                        className={`block text-sm font-medium truncate ${date ? "text-slate-800" : "text-slate-400"}`}
+                        className={`block text-sm font-medium truncate font-sans ${
+                          date ? "text-slate-800" : "text-slate-400"
+                        }`}
                       >
                         {date ? format(date, "PPP") : "Choose a date"}
                       </span>
@@ -105,7 +106,7 @@ export default function HeroBanner() {
                   </div>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-auto p-0 border-slate-200 shadow-xl rounded-2xl"
+                  className="w-auto p-0 border-slate-200 shadow-xl rounded-2xl font-sans"
                   align="start"
                 >
                   <Calendar
@@ -118,14 +119,14 @@ export default function HeroBanner() {
               </Popover>
             </div>
 
-            <div className="hidden md:block w-px h-9 bg-slate-200/80" />
+            <div className="hidden md:block w-px h-9 bg-slate-200/80 shrink-0" />
 
-            <div className="md:col-span-3 flex items-center gap-3.5 px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-              <div className="p-2 rounded-xl bg-orange-50 text-primary">
-                <Search className="w-5 h-5" />
+            <div className="flex-1 flex items-center gap-3.5 px-4 py-2.5 rounded-2xl hover:bg-slate-50/80 transition-colors">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Search className="w-5 h-5 stroke-[2.2]" />
               </div>
-              <div className="flex-1 min-w-0">
-                <label className="block text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+              <div className="flex-1 min-w-0 font-sans">
+                <label className="block text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                   Discover
                 </label>
                 <input
@@ -133,20 +134,18 @@ export default function HeroBanner() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Event, artist, or venue"
-                  className="w-full text-sm font-medium text-slate-800 placeholder:text-slate-400 bg-transparent border-none outline-none focus:ring-0 p-0"
+                  className="w-full text-sm font-medium text-slate-800 placeholder:text-slate-400 bg-transparent border-none outline-none focus:ring-0 p-0 font-sans"
                 />
               </div>
             </div>
 
-            <div className="md:col-span-2 p-1">
+            <div className="shrink-0 p-1 md:pl-2">
               <button
                 type="button"
-                className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-[#f24a26] active:scale-[0.98] text-white font-medium py-3 px-5 rounded-xl sm:rounded-2xl shadow-[0_8px_20px_-3px_rgba(255,87,51,0.4)] transition-all"
+                className="w-full md:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground font-semibold py-3.5 px-7 rounded-2xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all font-sans cursor-pointer"
               >
-                <Search className="w-4 h-4" />
-                <span className="text-sm font-semibold tracking-wide">
-                  Search
-                </span>
+                <Search className="w-4 h-4 stroke-[2.5]" />
+                <span className="text-sm tracking-wide">Search</span>
               </button>
             </div>
           </div>

@@ -1,20 +1,33 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  Ticket,
+  Home,
+  Search,
+  Heart,
+  User,
+  Bell,
+  Menu,
+  X,
+  LogOut,
+  Settings,
+  LayoutDashboard,
+} from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { useLogout } from "@/hooks/use-auth";
+import { authStore } from "@/store/auth.store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLogout } from "@/hooks/use-auth";
-import { authStore } from "@/store/auth.store";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Separator } from "./ui/separator";
+import Logo from "./Logo";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -31,128 +44,252 @@ export default function Navbar() {
     });
   };
 
-  const isActive = (href: string) => pathname === href;
+  const isActive = (path: string) => {
+    if (path === "/" && pathname !== "/") return false;
+    return pathname?.startsWith(path);
+  };
+
+  const navLinks = [
+    { name: "Home", href: "/", icon: Home },
+    { name: "Explore Events", href: "/explore", icon: Search },
+    { name: "My Tickets", href: "/bookings", icon: Ticket },
+    { name: "Wishlist", href: "/wishlist", icon: Heart },
+    { name: "Profile", href: "/profile", icon: User },
+  ];
+
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  };
 
   return (
-    <nav className="mx-auto flex h-[86px] w-[min(1180px,calc(100%-48px))] items-center justify-between border-b border-[var(--line)] font-sans max-md:h-[70px] max-md:w-[calc(100%-32px)]">
-      <Link className="text-[25px] font-extrabold tracking-[-1.5px]" href="/">
-        bengalBooking<span className="text-primary">.</span>
-      </Link>
+    <header className="sticky top-0 z-50 w-full bg-[#0c0d28] border-b border-white/10 font-sans">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          <Logo />
 
-      <div className="hidden gap-[35px] text-[13px] text-[#5c6271] md:flex">
-        <Link
-          href="/explore"
-          className={isActive("/explore") ? "text-[var(--coral-dark)]" : ""}
-        >
-          Explore
-        </Link>
-        <a href="/#categories">Categories</a>
-        <a href="/#about">About us</a>
-      </div>
+          <nav className="hidden md:flex items-center gap-2 lg:gap-4 h-full">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              const Icon = link.icon;
 
-      <div className="flex items-center gap-[22px] text-[13px]">
-        <button
-          className="hidden cursor-pointer border-0 bg-transparent text-[23px] text-[var(--ink)] md:flex"
-          aria-label="Search"
-        >
-          ⌕
-        </button>
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`relative flex items-center gap-2 px-3.5 h-full text-sm font-medium tracking-wide transition-all ${
+                    active
+                      ? "!text-white font-semibold"
+                      : "!text-slate-300 hover:!text-white"
+                  }`}
+                >
+                  <Icon
+                    className={`h-4 w-4 shrink-0 transition-colors ${
+                      active
+                        ? "!text-white stroke-[2.5]"
+                        : "!text-slate-300 group-hover:!text-white stroke-[2]"
+                    }`}
+                  />
+                  <span>{link.name}</span>
+                  {active && (
+                    <span className="absolute bottom-0 inset-x-2 h-[3px] rounded-full bg-[#ff5236]" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
 
-        {isLoading ? (
-          <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
-        ) : user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Avatar className="cursor-pointer w-8 h-8">
-                <AvatarImage src={user.image ?? undefined} alt={user.name} />
-                <AvatarFallback>
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem disabled className="flex flex-col">
-                <span className="font-medium">{user.name}</span>
-                <span className="text-xs text-gray-500">{user.email}</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/bookings">My Bookings</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/wishlist">Wishlist</Link>
-              </DropdownMenuItem>
-              {user.role === "SELLER" && (
-                <DropdownMenuItem asChild>
-                  <Link href="/seller/dashboard">Seller Dashboard</Link>
-                </DropdownMenuItem>
-              )}
-              {user.role === "SUPER_ADMIN" && (
-                <DropdownMenuItem asChild>
-                  <Link href="/admin/dashboard">Admin Dashboard</Link>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem asChild>
-                <Link href="/settings">Settings</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <>
-            <Link className="hidden text-[#5c6271] md:inline" href="/login">
-              Log in
-            </Link>
-            <Link
-              className="inline-flex items-center justify-center gap-[15px] rounded-[5px] bg-[var(--coral)] px-4 py-[11px] font-sans text-xs font-bold text-white transition hover:-translate-y-0.5 hover:bg-[var(--coral-dark)]"
-              href="/register"
+          <div className="flex items-center gap-3">
+            {isLoading ? (
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-white/10 animate-pulse" />
+                <div className="h-10 w-10 rounded-full bg-white/10 animate-pulse" />
+              </div>
+            ) : user ? (
+              <>
+                <button
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.14] !text-slate-200 hover:!text-white transition-all active:scale-95"
+                  aria-label="Notifications"
+                >
+                  <Bell className="h-4 w-4" />
+                </button>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-[#ff5236] focus:ring-offset-2 focus:ring-offset-[#0c0d28]">
+                      <Avatar className="h-10 w-10 border border-white/20 cursor-pointer">
+                        <AvatarImage
+                          src={user.image ?? undefined}
+                          alt={user.name}
+                        />
+                        <AvatarFallback className="bg-[#b6b4f6] text-[#131238] font-bold text-sm tracking-wider">
+                          {getInitials(user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
+
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-56 bg-[#141638] border-white/10 !text-slate-200 shadow-2xl rounded-2xl p-1.5"
+                  >
+                    <div className="px-3 py-2">
+                      <p className="text-sm font-semibold !text-white">
+                        {user.name}
+                      </p>
+                      <p className="text-xs !text-slate-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+
+                    <Separator className="bg-white/10 my-1" />
+
+                    <DropdownMenuItem
+                      asChild
+                      className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
+                    >
+                      <Link
+                        href="/bookings"
+                        className="flex items-center gap-2"
+                      >
+                        <Ticket className="h-4 w-4 text-[#ff6849]" />
+                        <span>My Tickets</span>
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      asChild
+                      className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
+                    >
+                      <Link
+                        href="/wishlist"
+                        className="flex items-center gap-2"
+                      >
+                        <Heart className="h-4 w-4 text-[#ff6849]" />
+                        <span>Wishlist</span>
+                      </Link>
+                    </DropdownMenuItem>
+
+                    {user.role === "SELLER" && (
+                      <DropdownMenuItem
+                        asChild
+                        className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
+                      >
+                        <Link
+                          href="/seller/dashboard"
+                          className="flex items-center gap-2"
+                        >
+                          <LayoutDashboard className="h-4 w-4 text-[#ff6849]" />
+                          <span>Seller Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    {user.role === "SUPER_ADMIN" && (
+                      <DropdownMenuItem
+                        asChild
+                        className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
+                      >
+                        <Link
+                          href="/admin/dashboard"
+                          className="flex items-center gap-2"
+                        >
+                          <LayoutDashboard className="h-4 w-4 text-[#ff6849]" />
+                          <span>Admin Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem
+                      asChild
+                      className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
+                    >
+                      <Link
+                        href="/settings"
+                        className="flex items-center gap-2"
+                      >
+                        <Settings className="h-4 w-4 text-slate-400" />
+                        <span>Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
+
+                    <Separator className="bg-white/10 my-1" />
+
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="rounded-xl hover:bg-red-500/20 focus:bg-red-500/20 text-red-400 focus:text-red-400 cursor-pointer flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-sm font-medium !text-slate-300 hover:!text-white transition-colors"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 text-sm font-semibold !text-white bg-gradient-to-r from-[#ff6b4a] to-[#ff4a2d] hover:brightness-105 active:scale-95 rounded-xl shadow-[0_4px_15px_rgba(255,87,51,0.35)] transition-all"
+                >
+                  Sign up
+                </Link>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 !text-slate-200 hover:!text-white"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
             >
-              Create account
-            </Link>
-          </>
-        )}
-
-        <button
-          className="md:hidden"
-          onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
-        >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
+              {isOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-16 space-y-2 border-b border-gray-200 bg-white p-4 md:hidden">
-          <Link
-            href="/explore"
-            className="block py-2"
-            onClick={() => setIsOpen(false)}
-          >
-            Explore
-          </Link>
-          <a
-            href="/#categories"
-            className="block py-2"
-            onClick={() => setIsOpen(false)}
-          >
-            Categories
-          </a>
-          <a
-            href="/#about"
-            className="block py-2"
-            onClick={() => setIsOpen(false)}
-          >
-            About us
-          </a>
-          {!user && (
-            <>
-              <Link href="/login" className="block py-2">
-                Log in
+        <div className="md:hidden bg-[#0c0d28]/95 backdrop-blur-xl border-b border-white/10 px-4 pt-2 pb-6 space-y-2">
+          {navLinks.map((link) => {
+            const active = isActive(link.href);
+            const Icon = link.icon;
+
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-white/10 !text-white font-semibold"
+                    : "!text-slate-300 hover:bg-white/5 hover:!text-white"
+                }`}
+              >
+                <Icon
+                  className={`h-4 w-4 ${active ? "!text-[#ff5236]" : ""}`}
+                />
+                <span>{link.name}</span>
               </Link>
-            </>
-          )}
+            );
+          })}
         </div>
       )}
-    </nav>
+    </header>
   );
 }

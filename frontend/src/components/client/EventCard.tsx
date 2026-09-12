@@ -84,7 +84,7 @@ export function EventCard({ event }: { event: Event }) {
 
   return (
     <Link
-      href={`/event/${event.id}`}
+      href={`/events/${event.id}`}
       className="group relative flex w-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden">

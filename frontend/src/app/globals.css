@@ -1180,12 +1180,18 @@ h2 em {
 @layer base {
   * {
     @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
+    box-sizing: border-box;
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+  }
+  a {
+    text-decoration: none;
   }
 }
 
