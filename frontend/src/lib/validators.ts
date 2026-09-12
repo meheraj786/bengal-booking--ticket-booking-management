@@ -38,6 +38,7 @@ export type SellerRegisterInput = z.infer<typeof sellerRegisterSchema>;
 
 // Admin Validators
 export const areaFormSchema = z.object({
+  divisionId: z.string().uuid("Please select a division"),
   name: z
     .string()
     .min(2, "Name must be at least 2 characters")
@@ -109,8 +110,22 @@ export const eventFormSchema = z.object({
     .string()
     .min(5, "Address must be at least 5 characters")
     .max(500, "Address is too long"),
-  startAt: z.string().datetime("Please select a valid start date and time"),
-  endAt: z.string().datetime("Please select a valid end date and time"),
+  startAt: z
+    .string()
+    .min(1, "Start date and time is required")
+    .refine((val) => {
+      if (!val) return false;
+      const date = new Date(val);
+      return !isNaN(date.getTime());
+    }, "Please select a valid start date and time"),
+  endAt: z
+    .string()
+    .min(1, "End date and time is required")
+    .refine((val) => {
+      if (!val) return false;
+      const date = new Date(val);
+      return !isNaN(date.getTime());
+    }, "Please select a valid end date and time"),
   totalTickets: z
     .number()
     .int("Total tickets must be a whole number")

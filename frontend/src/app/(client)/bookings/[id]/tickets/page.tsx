@@ -43,8 +43,8 @@ export default function TicketsPage() {
 
   if (isLoading) {
     return (
-      <main className="route-shell">
-        <div className="wrap">
+      <main className="min-h-screen">
+        <div className="mx-auto w-[min(1180px,calc(100%-48px))] max-md:w-[calc(100%-32px)]">
           <div className="text-center py-12">Loading tickets...</div>
         </div>
       </main>
@@ -53,8 +53,8 @@ export default function TicketsPage() {
 
   if (!booking || booking.status !== "CONFIRMED" || !booking.tickets) {
     return (
-      <main className="route-shell">
-        <div className="wrap">
+      <main className="min-h-screen">
+        <div className="mx-auto w-[min(1180px,calc(100%-48px))] max-md:w-[calc(100%-32px)]">
           <Button asChild variant="ghost" className="mb-4">
             <Link href="/bookings">
               <ChevronLeft className="w-4 h-4 mr-2" />
@@ -74,8 +74,8 @@ export default function TicketsPage() {
   }
 
   return (
-    <main className="route-shell">
-      <div className="wrap">
+    <main className="min-h-screen">
+      <div className="mx-auto w-[min(1180px,calc(100%-48px))] max-md:w-[calc(100%-32px)]">
         <Button asChild variant="ghost" className="mb-4">
           <Link href="/bookings">
             <ChevronLeft className="w-4 h-4 mr-2" />

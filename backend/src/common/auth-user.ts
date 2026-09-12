@@ -8,6 +8,8 @@ export type AuthUser = {
 };
 
 export const CurrentUser = createParamDecorator(
-  (_: unknown, context: ExecutionContext): AuthUser =>
-    context.switchToHttp().getRequest().user,
+  (_: unknown, context: ExecutionContext): AuthUser => {
+    const request = context.switchToHttp().getRequest();
+    return request.user;
+  },
 );

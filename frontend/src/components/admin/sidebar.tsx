@@ -63,7 +63,7 @@ export function AdminSidebar() {
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold">
               E
             </div>
-            <span className="font-bold text-lg">Evently</span>
+            <span className="font-bold text-lg">Bengal Booking</span>
           </Link>
         </div>
 

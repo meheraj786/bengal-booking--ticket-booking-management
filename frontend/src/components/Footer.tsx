@@ -4,11 +4,14 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="footer wrap border-t border-gray-200 py-8">
+    <footer className="mx-auto w-[min(1180px,calc(100%-48px))] border-t border-gray-200 py-8 font-sans max-md:w-[calc(100%-32px)]">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         <div>
-          <Link className="brand inline-block mb-2" href="/">
-            evently<span>.</span>
+          <Link
+            className="mb-2 inline-block text-[25px] font-extrabold tracking-[-1.5px]"
+            href="/"
+          >
+            bengalBooking<span className="text-primary">.</span>
           </Link>
           <p className="text-sm text-gray-600">Moments made easy.</p>
         </div>
@@ -81,8 +84,8 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
-        <p>&copy; {currentYear} Evently. All rights reserved.</p>
+      <div className="flex flex-col items-center justify-between border-t border-gray-200 pt-6 text-sm text-gray-600 md:flex-row">
+        <p>&copy; {currentYear} Bengal Booking. All rights reserved.</p>
         <div className="flex gap-6 mt-4 md:mt-0">
           <a href="#" className="hover:text-black">
             Privacy Policy

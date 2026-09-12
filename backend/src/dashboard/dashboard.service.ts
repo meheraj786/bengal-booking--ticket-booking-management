@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { BookingStatus, EventStatus, Role } from "@prisma/client";
 import { PrismaService } from "../infrastructure/prisma.service";
 
 @Injectable()
 export class DashboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
   async user(userId: string) {
     const bookings = await this.prisma.booking.findMany({
       where: { userId },

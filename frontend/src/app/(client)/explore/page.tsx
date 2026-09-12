@@ -8,7 +8,7 @@ import { useEventList, useEventFilters } from "@/hooks/useEvent";
 
 export default function ExplorePage() {
   return (
-    <Suspense fallback={<main className="route-shell" />}>
+    <Suspense fallback={<main className="min-h-screen" />}>
       <ExplorePageContent />
     </Suspense>
   );
@@ -85,23 +85,25 @@ function ExplorePageContent() {
   });
 
   return (
-    <main className="route-shell">
-      <section className="route-hero wrap">
-        <p className="eyebrow">THE EVENT CALENDAR</p>
-        <h1>
+    <main className="min-h-screen">
+      <section className="mx-auto w-[min(1180px,calc(100%-48px))] py-[85px_65px] max-md:w-[calc(100%-32px)] max-md:py-[60px_45px]">
+        <p className="mb-[18px] font-sans text-[10px] font-bold tracking-[2.2px] text-[var(--coral-dark)]">
+          THE EVENT CALENDAR
+        </p>
+        <h1 className="m-0 text-[clamp(48px,6vw,72px)] font-medium leading-[0.98] tracking-[-4px]">
           Find your next
           <br />
           <em>good idea.</em>
         </h1>
-        <p>
+        <p className="mt-[25px] max-w-[420px] font-sans text-[15px] leading-[1.6] text-[var(--muted)]">
           Curated experiences, local favourites, and the kind of plans that turn
           into stories.
         </p>
       </section>
 
-      <section className="explore-content wrap">
-        <aside className="filter-panel">
-          <strong>Filter events</strong>
+      <section className="mx-auto grid w-[min(1180px,calc(100%-48px))] grid-cols-[205px_1fr] gap-12 pb-[90px] max-md:w-[calc(100%-32px)] max-md:grid-cols-1">
+        <aside className="border-t border-[var(--ink)] pt-[17px] font-sans text-xs max-md:hidden">
+          <strong className="mb-7 block text-[15px]">Filter events</strong>
 
           <label>
             Search
@@ -218,9 +220,9 @@ function ExplorePageContent() {
         </aside>
 
         <div className="results">
-          <div className="filter-tabs">
+          <div className="mb-[18px] flex gap-2 overflow-x-auto border-b border-[var(--line)] pb-3.5">
             <button
-              className={!selectedCategory ? "selected" : ""}
+              className={`whitespace-nowrap border px-3 py-[9px] font-sans text-[11px] ${!selectedCategory ? "border-[var(--line)] bg-white text-[var(--ink)]" : "border-transparent bg-transparent text-[var(--muted)]"}`}
               onClick={() => {
                 setSelectedCategory(undefined);
                 updateUrl("category");
@@ -231,7 +233,7 @@ function ExplorePageContent() {
             {filters?.categories?.slice(0, 5).map((cat) => (
               <button
                 key={cat.id}
-                className={selectedCategory === cat.slug ? "selected" : ""}
+                className={`whitespace-nowrap border px-3 py-[9px] font-sans text-[11px] ${selectedCategory === cat.slug ? "border-[var(--line)] bg-white text-[var(--ink)]" : "border-transparent bg-transparent text-[var(--muted)]"}`}
                 onClick={() => setSelectedCategory(cat.slug)}
               >
                 {cat.name}
@@ -239,7 +241,7 @@ function ExplorePageContent() {
             ))}
           </div>
 
-          <div className="result-top">
+          <div className="mb-[22px] flex items-center justify-between font-sans text-[11px] text-[var(--muted)]">
             <span>
               Showing <strong>{filteredEvents.length}</strong> events
             </span>
@@ -256,43 +258,43 @@ function ExplorePageContent() {
           </div>
 
           {isLoading ? (
-            <div className="event-grid explore-grid">
+            <div className="grid grid-cols-3 gap-[18px] max-md:grid-cols-2 max-md:gap-[13px]">
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
-                  className="event-card skeleton"
+                  className="min-w-0 animate-pulse"
                   role="status"
                   aria-label="Loading event"
                 >
-                  <div className="event-image skeleton-image" />
-                  <div className="event-info">
-                    <div className="skeleton-text" />
-                    <div className="skeleton-text" />
+                  <div className="h-[210px] rounded bg-gray-200 max-md:h-[155px]" />
+                  <div className="space-y-2 px-px py-[15px]">
+                    <div className="h-3 rounded bg-gray-200" />
+                    <div className="h-3 rounded bg-gray-200" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filteredEvents.length > 0 ? (
-            <div className="event-grid explore-grid">
+            <div className="grid grid-cols-3 gap-[18px] max-md:grid-cols-2 max-md:gap-[13px]">
               {filteredEvents.map((event) => (
                 <Link
-                  className="event-card"
+                  className="min-w-0"
                   href={`/events/${event.id}`}
                   key={event.id}
                 >
                   <div
-                    className="event-image"
+                    className="relative h-[210px] overflow-hidden rounded bg-cover bg-center max-md:h-[155px]"
                     style={{
                       backgroundImage: event.coverImage
                         ? `url(${event.coverImage})`
                         : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     }}
                   >
-                    <span className="event-tag">
+                    <span className="absolute left-3 top-3 bg-white px-[9px] py-1.5 font-sans text-[10px]">
                       {event.category?.name || "Event"}
                     </span>
                     <button
-                      className="save-button"
+                      className="absolute right-3 top-2.5 flex h-[29px] w-[29px] items-center justify-center rounded-full border-0 bg-white/85"
                       aria-label={`Save ${event.title}`}
                       onClick={(e) => {
                         e.preventDefault();
@@ -303,21 +305,25 @@ function ExplorePageContent() {
                       <Heart className="w-5 h-5" />
                     </button>
                   </div>
-                  <div className="event-info">
+                  <div className="flex items-start justify-between gap-2 px-px py-[15px] max-md:block">
                     <div>
-                      <p className="event-date">
+                      <p className="mb-1.5 font-sans text-[9px] font-bold uppercase tracking-[1px] text-[var(--coral-dark)]">
                         {new Date(event.startAt).toLocaleDateString("en-US", {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
                         })}
                       </p>
-                      <h3>{event.title}</h3>
-                      <p className="event-place">
+                      <h3 className="m-0 text-lg font-medium leading-[1.1]">
+                        {event.title}
+                      </h3>
+                      <p className="mt-2 font-sans text-[11px] text-[var(--muted)]">
                         {event.venueName}, {event.area?.name}
                       </p>
                     </div>
-                    <strong className="event-price">৳ {event.price}</strong>
+                    <strong className="whitespace-nowrap font-sans text-xs font-bold max-md:mt-2 max-md:block">
+                      ৳ {event.price}
+                    </strong>
                   </div>
                 </Link>
               ))}
@@ -338,7 +344,7 @@ function ExplorePageContent() {
                   setSortBy("date");
                   router.replace(currentPathname, { scroll: false });
                 }}
-                className="text-link"
+                className="font-sans text-xs font-bold"
               >
                 Clear filters
               </button>

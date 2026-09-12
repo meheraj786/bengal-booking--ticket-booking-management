@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Post,
   UseGuards,
@@ -22,12 +23,17 @@ import { RolesGuard } from "../common/roles.guard";
 
 @Controller("bookings")
 export class BookingController {
-  constructor(private readonly bookings: BookingService) {}
+  constructor(
+    @Inject(BookingService) private readonly bookings: BookingService,
+  ) {}
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Roles(Role.USER, Role.SUPER_ADMIN)
   list(@CurrentUser() user: AuthUser) {
+    if (user.role === Role.SUPER_ADMIN) {
+      return this.bookings.listAll();
+    }
     return this.bookings.listForUser(user.id);
   }
 

@@ -20,10 +20,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  areaFormSchema,
-  type AreaFormInput,
-} from "@/lib/validators";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { areaFormSchema, type AreaFormInput } from "@/lib/validators";
 import type { Area } from "@/types/area.types";
+import type { Division } from "@/types/division.types";
 
 interface AreaDialogProps {
   open: boolean;
@@ -31,6 +36,7 @@ interface AreaDialogProps {
   onSubmit: (data: AreaFormInput) => void;
   area?: Area;
   isLoading?: boolean;
+  divisions?: Division[];
 }
 
 export function AreaDialog({
@@ -39,10 +45,12 @@ export function AreaDialog({
   onSubmit,
   area,
   isLoading,
+  divisions = [],
 }: AreaDialogProps) {
   const form = useForm<AreaFormInput>({
     resolver: zodResolver(areaFormSchema),
     defaultValues: {
+      divisionId: "",
       name: "",
       slug: "",
     },
@@ -51,11 +59,13 @@ export function AreaDialog({
   useEffect(() => {
     if (area) {
       form.reset({
+        divisionId: area.divisionId,
         name: area.name,
         slug: area.slug,
       });
     } else {
       form.reset({
+        divisionId: "",
         name: "",
         slug: "",
       });
@@ -92,6 +102,38 @@ export function AreaDialog({
 
         <form id="area-form" onSubmit={handleFormSubmit}>
           <FieldGroup>
+            <Controller
+              name="divisionId"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="area-division">Division</FieldLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger
+                      id="area-division"
+                      aria-invalid={fieldState.invalid}
+                    >
+                      <SelectValue placeholder="Select division" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {divisions.map((division) => (
+                        <SelectItem key={division.id} value={division.id}>
+                          {division.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
             <Controller
               name="name"
               control={form.control}

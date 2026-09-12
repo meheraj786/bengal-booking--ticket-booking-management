@@ -1,5 +1,6 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
   BadRequestException,
@@ -11,7 +12,7 @@ import { CreateTicketDto, UpdateTicketDto } from "./ticket.dto";
 
 @Injectable()
 export class TicketService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   async list(eventId: string) {
     const event = await this.prisma.event.findUnique({

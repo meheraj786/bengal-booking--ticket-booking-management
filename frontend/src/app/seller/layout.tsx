@@ -3,7 +3,7 @@ import { SellerSidebar } from "@/components/seller/sidebar";
 import { SellerHeader } from "@/components/seller/header";
 
 export const metadata = {
-  title: "Seller Dashboard - Evently",
+  title: "Seller Dashboard - Bengal Booking",
   description: "Manage your events",
 };
 

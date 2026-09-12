@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { PrismaService } from "../infrastructure/prisma.service";
@@ -22,7 +22,7 @@ function accessTokenFromCookie(request?: {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {
     super({
       jwtFromRequest: (request) => {
         const cookieToken = accessTokenFromCookie(request);

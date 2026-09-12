@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { Role, UserStatus } from "@prisma/client";
 import { PrismaService } from "../infrastructure/prisma.service";
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   list() {
     return this.prisma.user.findMany({

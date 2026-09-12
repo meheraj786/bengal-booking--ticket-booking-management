@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Patch,
   UseGuards,
@@ -17,7 +18,7 @@ import { UserService } from "./user.service";
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.SUPER_ADMIN)
 export class UserController {
-  constructor(private readonly service: UserService) {}
+  constructor(@Inject(UserService) private readonly service: UserService) {}
 
   @Get()
   list() {

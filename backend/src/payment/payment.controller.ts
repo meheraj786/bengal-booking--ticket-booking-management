@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from "@nestjs/common";
+import { Controller, Get, Inject, Param, UseGuards } from "@nestjs/common";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { JwtAuthGuard } from "../common/jwt-auth.guard";
 import { RolesGuard } from "../common/roles.guard";
@@ -8,7 +8,7 @@ import { Role } from "@prisma/client";
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.SUPER_ADMIN)
 export class PaymentController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
   @Get() list() {
     return this.prisma.payment.findMany({
       include: { booking: true },

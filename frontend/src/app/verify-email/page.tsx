@@ -46,8 +46,11 @@ function VerifyEmailContent() {
 
   return (
     <main className="auth-shell">
-      <Link className="brand" href="/">
-        evently<span>.</span>
+      <Link
+        className="block text-[25px] font-extrabold tracking-[-1.5px]"
+        href="/"
+      >
+        bengalBooking<span className="text-primary">.</span>
       </Link>
       <div className="auth-card">
         <p className="eyebrow">EMAIL VERIFICATION</p>
@@ -80,7 +83,10 @@ function VerifyEmailContent() {
               <em>set.</em>
             </h1>
             <p className="auth-intro">{message}</p>
-            <Button asChild className="button auth-button w-full mt-4">
+            <Button
+              asChild
+              className="mt-4 w-full bg-[var(--coral)] font-sans text-xs font-bold text-white hover:bg-[var(--coral-dark)]"
+            >
               <Link href="/login">Continue to login →</Link>
             </Button>
           </>
@@ -131,8 +137,11 @@ function VerifyEmailContent() {
 function VerifyEmailFallback() {
   return (
     <main className="auth-shell">
-      <Link className="brand" href="/">
-        evently<span>.</span>
+      <Link
+        className="block text-[25px] font-extrabold tracking-[-1.5px]"
+        href="/"
+      >
+        bengalBooking<span>.</span>
       </Link>
       <div className="auth-card">
         <p className="eyebrow">EMAIL VERIFICATION</p>

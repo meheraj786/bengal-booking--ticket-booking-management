@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -19,18 +19,23 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
-  eventFormSchema,
-  type EventFormInput,
-} from "@/lib/validators";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { eventFormSchema, type EventFormInput } from "@/lib/validators";
 import type { Event, EventCategory, EventArea } from "@/types/event.types";
 
 interface EventDialogProps {
@@ -52,6 +57,9 @@ export function EventDialog({
   areas = [],
   isLoading,
 }: EventDialogProps) {
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [areaOpen, setAreaOpen] = useState(false);
+
   const form = useForm<EventFormInput>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -72,6 +80,16 @@ export function EventDialog({
 
   useEffect(() => {
     if (event) {
+      const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+      };
+
       form.reset({
         categoryId: event.categoryId,
         areaId: event.areaId,
@@ -79,8 +97,8 @@ export function EventDialog({
         description: event.description,
         venueName: event.venueName,
         venueAddress: event.venueAddress,
-        startAt: event.startAt,
-        endAt: event.endAt,
+        startAt: formatDateTime(event.startAt),
+        endAt: formatDateTime(event.endAt),
         totalTickets: event.totalTickets,
         maxTicketsPerBooking: event.maxTicketsPerBooking,
         price: Number(event.price),
@@ -105,8 +123,24 @@ export function EventDialog({
   }, [event, form, open]);
 
   const handleFormSubmit = form.handleSubmit((data) => {
-    onSubmit(data);
+    const formatToISO = (dateTimeLocal: string) => {
+      if (!dateTimeLocal) return "";
+      const date = new Date(dateTimeLocal);
+      return date.toISOString();
+    };
+
+    onSubmit({
+      ...data,
+      startAt: formatToISO(data.startAt),
+      endAt: formatToISO(data.endAt),
+    });
   });
+
+  const selectedCategory = categories.find(
+    (cat) => cat.id === form.watch("categoryId"),
+  );
+
+  const selectedArea = areas.find((area) => area.id === form.watch("areaId"));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -123,31 +157,66 @@ export function EventDialog({
         <form id="event-form" onSubmit={handleFormSubmit}>
           <FieldGroup className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
+              {/* Category Searchable Dropdown */}
               <Controller
                 name="categoryId"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="event-category">Category</FieldLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isLoading}
-                    >
-                      <SelectTrigger
-                        id="event-category"
-                        aria-invalid={fieldState.invalid}
-                      >
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+                      <PopoverTrigger>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={categoryOpen}
+                          className="w-full justify-between"
+                          disabled={isLoading}
+                        >
+                          {selectedCategory
+                            ? selectedCategory.name
+                            : "Select category..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command shouldFilter={true}>
+                          <CommandInput
+                            placeholder="Search categories..."
+                            value={undefined}
+                          />
+                          <CommandList>
+                            <CommandEmpty>No category found.</CommandEmpty>
+                            <CommandGroup>
+                              {categories.map((category) => (
+                                <CommandItem
+                                  key={category.id}
+                                  value={category.name}
+                                  onSelect={() => {
+                                    field.onChange(
+                                      field.value === category.id
+                                        ? ""
+                                        : category.id,
+                                    );
+                                    setCategoryOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === category.id
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                  {category.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -155,31 +224,62 @@ export function EventDialog({
                 )}
               />
 
+              {/* Area Searchable Dropdown */}
               <Controller
                 name="areaId"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="event-area">Area</FieldLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isLoading}
-                    >
-                      <SelectTrigger
-                        id="event-area"
-                        aria-invalid={fieldState.invalid}
-                      >
-                        <SelectValue placeholder="Select area" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {areas.map((area) => (
-                          <SelectItem key={area.id} value={area.id}>
-                            {area.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={areaOpen} onOpenChange={setAreaOpen}>
+                      <PopoverTrigger>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={areaOpen}
+                          className="w-full justify-between"
+                          disabled={isLoading}
+                        >
+                          {selectedArea ? selectedArea.name : "Select area..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command shouldFilter={true}>
+                          <CommandInput
+                            placeholder="Search areas..."
+                            value={undefined}
+                          />
+                          <CommandList>
+                            <CommandEmpty>No area found.</CommandEmpty>
+                            <CommandGroup>
+                              {areas.map((area) => (
+                                <CommandItem
+                                  key={area.id}
+                                  value={area.name}
+                                  onSelect={() => {
+                                    field.onChange(
+                                      field.value === area.id ? "" : area.id,
+                                    );
+                                    setAreaOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === area.id
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                  {area.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}

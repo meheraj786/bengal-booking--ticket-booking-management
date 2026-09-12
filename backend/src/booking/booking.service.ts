@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
   ForbiddenException,
@@ -12,8 +13,8 @@ import { AuthUser } from "../common/auth-user";
 @Injectable()
 export class BookingService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly redis: RedisService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(RedisService) private readonly redis: RedisService,
   ) {}
 
   async createBooking(eventId: string, userId: string, quantity: number) {
@@ -153,6 +154,13 @@ export class BookingService {
     return this.prisma.booking.findMany({
       where: { userId },
       include: { event: true, tickets: true, payment: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  listAll() {
+    return this.prisma.booking.findMany({
+      include: { event: true, tickets: true, payment: true, user: true },
       orderBy: { createdAt: "desc" },
     });
   }

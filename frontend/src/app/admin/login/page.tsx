@@ -35,15 +35,17 @@ export default function AdminLoginPage() {
   });
 
   return (
-    <main className="auth-shell bg-red-500">
-      <div className="auth-card">
-        <p className="eyebrow">ADMIN ACCESS</p>
-        <h1>
-          Evently
+    <main className="min-h-screen bg-[var(--lavender)] px-[5%] py-[38px]">
+      <div className="mx-auto mt-[35px] w-full max-w-[460px] bg-[var(--cream)] p-12 text-left max-sm:px-6 max-sm:py-9">
+        <p className="mb-[18px] font-sans text-[10px] font-bold tracking-[2.2px] text-[var(--coral-dark)]">
+          ADMIN ACCESS
+        </p>
+        <h1 className="m-0 text-[47px] font-medium leading-[0.98] tracking-[-4px]">
+          Bengal Booking
           <br />
           <em>Control Room.</em>
         </h1>
-        <p className="auth-intro">
+        <p className="my-[15px] mb-7 max-w-[300px] font-sans text-[13px] leading-[1.6] text-[var(--muted)]">
           Restricted area. Authorized personnel only.
         </p>
         <form
@@ -59,7 +61,7 @@ export default function AdminLoginPage() {
             <Input
               id="email"
               type="email"
-              placeholder="admin@evently.com"
+              placeholder="admin@bengalBooking.com"
               {...form.register("email")}
             />
             {form.formState.errors.email && (
@@ -83,13 +85,13 @@ export default function AdminLoginPage() {
             )}
           </div>
           {(mutation.isError || form.formState.errors.root) && (
-            <p className="auth-error" role="alert">
+            <p className="font-sans text-[11px] text-[#b33e37]" role="alert">
               {form.formState.errors.root?.message ?? mutation.error?.message}
             </p>
           )}
           <Button
             type="submit"
-            className="button auth-button w-full"
+            className="w-full bg-[var(--coral)] font-sans text-xs font-bold text-white hover:bg-[var(--coral-dark)]"
             disabled={mutation.isPending}
           >
             {mutation.isPending ? "Signing in..." : "Log in →"}

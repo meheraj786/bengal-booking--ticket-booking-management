@@ -9,7 +9,9 @@ export class DivisionService {
   list() {
     return this.prisma.division.findMany({
       include: {
-        areas: true,
+        areas: {
+          include: { division: true },
+        },
         _count: { select: { areas: true } },
       },
       orderBy: { name: "asc" },

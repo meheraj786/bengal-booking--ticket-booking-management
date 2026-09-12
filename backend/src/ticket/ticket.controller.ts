@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -17,7 +18,7 @@ import { TicketService } from "./ticket.service";
 
 @Controller("events/:eventId/tickets")
 export class TicketController {
-  constructor(private readonly service: TicketService) {}
+  constructor(@Inject(TicketService) private readonly service: TicketService) {}
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)

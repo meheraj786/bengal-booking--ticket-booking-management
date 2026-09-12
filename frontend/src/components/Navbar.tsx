@@ -34,15 +34,15 @@ export default function Navbar() {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <nav className="nav wrap">
-      <Link className="brand" href="/">
-        evently<span>.</span>
+    <nav className="mx-auto flex h-[86px] w-[min(1180px,calc(100%-48px))] items-center justify-between border-b border-[var(--line)] font-sans max-md:h-[70px] max-md:w-[calc(100%-32px)]">
+      <Link className="text-[25px] font-extrabold tracking-[-1.5px]" href="/">
+        bengalBooking<span className="text-primary">.</span>
       </Link>
 
-      <div className="nav-links hidden md:flex">
+      <div className="hidden gap-[35px] text-[13px] text-[#5c6271] md:flex">
         <Link
           href="/explore"
-          className={isActive("/explore") ? "active-link" : ""}
+          className={isActive("/explore") ? "text-[var(--coral-dark)]" : ""}
         >
           Explore
         </Link>
@@ -50,8 +50,11 @@ export default function Navbar() {
         <a href="/#about">About us</a>
       </div>
 
-      <div className="nav-actions">
-        <button className="icon-button md:flex hidden" aria-label="Search">
+      <div className="flex items-center gap-[22px] text-[13px]">
+        <button
+          className="hidden cursor-pointer border-0 bg-transparent text-[23px] text-[var(--ink)] md:flex"
+          aria-label="Search"
+        >
           ⌕
         </button>
 
@@ -96,10 +99,13 @@ export default function Navbar() {
           </DropdownMenu>
         ) : (
           <>
-            <Link className="login-link hidden md:inline" href="/login">
+            <Link className="hidden text-[#5c6271] md:inline" href="/login">
               Log in
             </Link>
-            <Link className="button button-small" href="/register">
+            <Link
+              className="inline-flex items-center justify-center gap-[15px] rounded-[5px] bg-[var(--coral)] px-4 py-[11px] font-sans text-xs font-bold text-white transition hover:-translate-y-0.5 hover:bg-[var(--coral-dark)]"
+              href="/register"
+            >
               Create account
             </Link>
           </>
@@ -116,7 +122,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-gray-200 p-4 space-y-2">
+        <div className="absolute left-0 right-0 top-16 space-y-2 border-b border-gray-200 bg-white p-4 md:hidden">
           <Link
             href="/explore"
             className="block py-2"

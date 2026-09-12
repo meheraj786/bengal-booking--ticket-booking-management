@@ -38,7 +38,7 @@ export class EventService {
 
     return this.prisma.event.findMany({
       where: {
-        status: EventStatus.PUBLISHED,
+        // status: EventStatus.PUBLISHED,
         category: filters.category ? { slug: filters.category } : undefined,
         area:
           filters.area || filters.division

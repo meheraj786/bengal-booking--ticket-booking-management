@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from "@nestjs/common";
+import { Controller, Get, Inject, UseGuards } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import { AuthUser, CurrentUser } from "../common/auth-user";
 import { JwtAuthGuard } from "../common/jwt-auth.guard";
@@ -9,7 +9,9 @@ import { DashboardService } from "./dashboard.service";
 @Controller("dashboard")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DashboardController {
-  constructor(private readonly dashboard: DashboardService) {}
+  constructor(
+    @Inject(DashboardService) private readonly dashboard: DashboardService,
+  ) {}
 
   @Get("user") @Roles(Role.USER) user(@CurrentUser() user: AuthUser) {
     return this.dashboard.user(user.id);

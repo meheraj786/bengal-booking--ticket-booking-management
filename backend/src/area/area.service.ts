@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { AreaDto, UpdateAreaDto } from "./area.dto";
 
 @Injectable()
 export class AreaService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   list() {
     return this.prisma.area.findMany({

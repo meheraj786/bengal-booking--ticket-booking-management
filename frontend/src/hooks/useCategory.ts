@@ -9,6 +9,7 @@ import { categoryService } from "@/services/category.service";
 import { ApiError } from "@/lib/api-client";
 import type {
   Category,
+  CategoryFilters,
   CreateCategoryPayload,
   UpdateCategoryPayload,
 } from "@/types/category.types";
@@ -19,10 +20,12 @@ export const categoryKeys = {
   detail: (id: string) => [...categoryKeys.all, "detail", id] as const,
 };
 
-export function useCategoryList(): UseQueryResult<Category[], ApiError> {
+export function useCategoryList(
+  filters?: CategoryFilters,
+): UseQueryResult<Category[], ApiError> {
   return useQuery({
     queryKey: categoryKeys.list(),
-    queryFn: categoryService.list,
+    queryFn: () => categoryService.list(filters),
     staleTime: 5 * 60 * 1000,
   });
 }

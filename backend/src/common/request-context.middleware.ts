@@ -4,11 +4,8 @@ import { Request, Response, NextFunction } from "express";
 
 @Injectable()
 export class RequestContextMiddleware implements NestMiddleware {
-  use(request: Request, response: Response, next: NextFunction) {
-    response.setHeader(
-      "x-request-id",
-      request.header("x-request-id") ?? randomUUID(),
-    );
+  use(req: Request, res: Response, next: NextFunction) {
+    res.setHeader("x-request-id", req.header("x-request-id") ?? randomUUID());
     next();
   }
 }

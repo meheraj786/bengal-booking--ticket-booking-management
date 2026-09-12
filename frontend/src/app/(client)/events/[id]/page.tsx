@@ -1,216 +1,121 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
-import { Heart } from "lucide-react";
-import { useEventList, useEventFilters } from "@/hooks/useEvent";
+import { useSellerEvent } from "@/hooks/useSellerEvent";
+import { MapPin, Calendar, Users } from "lucide-react";
+import { BookingPanel } from "./booking-panel";
 
-export default function ExplorePage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    string | undefined
-  >();
-  const [selectedArea, setSelectedArea] = useState<string | undefined>();
-  const [priceRange, setPriceRange] = useState(5000);
-  const [sortBy, setSortBy] = useState("date");
+export default function EventDetailsPage() {
+  const params = useParams();
+  const eventId = params?.id as string;
 
-  const { data: filters } = useEventFilters();
-  const { data: events = [], isLoading } = useEventList({
-    search: searchQuery || undefined,
-    category: selectedCategory,
-    area: selectedArea,
-  });
+  const { data: event, isLoading, error } = useSellerEvent(eventId);
 
-  const filteredEvents = events
-    .filter((event) => Number(event.price) <= priceRange)
-    .sort((a, b) => {
-      if (sortBy === "price") {
-        return Number(a.price) - Number(b.price);
-      }
-      return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
-    });
+  if (isLoading) {
+    return (
+      <main className="min-h-screen">
+        <section className="mx-auto w-[min(1180px,calc(100%-48px))] py-[55px_100px] max-md:w-[calc(100%-32px)]">
+          <div className="text-center py-12">Loading event...</div>
+        </section>
+      </main>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <main className="min-h-screen">
+        <section className="mx-auto w-[min(1180px,calc(100%-48px))] py-[55px_100px] max-md:w-[calc(100%-32px)]">
+          <Link
+            className="mb-[30px] inline-block font-sans text-[11px] text-[var(--muted)]"
+            href="/explore"
+          >
+            ← Back to explore
+          </Link>
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">Event not found</p>
+            <Link href="/explore" className="font-sans text-xs font-bold">
+              Browse other events
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  const availableTickets = event.totalTickets - event.soldTickets;
+  const ticketPercentage = (event.soldTickets / event.totalTickets) * 100;
 
   return (
-    <main className="route-shell">
-      <section className="route-hero wrap">
-        <p className="eyebrow">THE EVENT CALENDAR</p>
-        <h1>
-          Find your next
-          <br />
-          <em>good idea.</em>
-        </h1>
-        <p>
-          Curated experiences, local favourites, and the kind of plans that turn
-          into stories.
-        </p>
-      </section>
-
-      <section className="explore-content wrap">
-        <aside className="filter-panel">
-          <strong>Filter events</strong>
-
-          <label>
-            Search
-            <input
-              placeholder="Event name or keyword"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+    <main className="min-h-screen">
+      <section className="mx-auto w-[min(1180px,calc(100%-48px))] py-[55px_100px] max-md:w-[calc(100%-32px)]">
+        <Link
+          className="mb-[30px] inline-block font-sans text-[11px] text-[var(--muted)]"
+          href="/explore"
+        >
+          ← Back to explore
+        </Link>
+        <div className="grid grid-cols-[1.3fr_0.7fr] gap-[55px] max-md:grid-cols-1 max-md:gap-8">
+          <div>
+            <div
+              className="h-[400px] bg-cover bg-center max-md:h-[260px]"
+              style={{
+                backgroundImage: event.coverImage
+                  ? `url(${event.coverImage})`
+                  : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              }}
             />
-          </label>
+            <div className="py-[38px]">
+              <p className="mb-[18px] font-sans text-[10px] font-bold tracking-[2.2px] text-[var(--coral-dark)]">
+                {event.category?.name?.toUpperCase()} ·{" "}
+                {event.area?.name?.toUpperCase()}
+              </p>
+              <h1 className="m-0 text-[58px] font-medium leading-[0.98] tracking-[-4px] max-md:text-[50px]">
+                {event.title.split(" ").slice(0, -1).join(" ")}
+                <br />
+                <em>{event.title.split(" ").slice(-1)[0]}</em>
+              </h1>
+              <p className=" text-black">{event.description}</p>
 
-          <label>
-            Category
-            <select
-              value={selectedCategory || ""}
-              onChange={(e) => setSelectedCategory(e.target.value || undefined)}
-            >
-              <option value="">All categories</option>
-              {filters?.categories?.map((cat) => (
-                <option key={cat.id} value={cat.slug}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Where
-            <select
-              value={selectedArea || ""}
-              onChange={(e) => setSelectedArea(e.target.value || undefined)}
-            >
-              <option value="">All locations</option>
-              {filters?.areas?.map((area) => (
-                <option key={area.id} value={area.slug}>
-                  {area.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Price range: ৳{priceRange}
-            <input
-              type="range"
-              min="0"
-              max="10000"
-              value={priceRange}
-              onChange={(e) => setPriceRange(Number(e.target.value))}
-            />
-          </label>
-        </aside>
-
-        <div className="results">
-          <div className="filter-tabs">
-            <button
-              className={!selectedCategory ? "selected" : ""}
-              onClick={() => setSelectedCategory(undefined)}
-            >
-              All events
-            </button>
-            {filters?.categories?.slice(0, 5).map((cat) => (
-              <button
-                key={cat.id}
-                className={selectedCategory === cat.slug ? "selected" : ""}
-                onClick={() => setSelectedCategory(cat.slug)}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
-          <div className="result-top">
-            <span>
-              Showing <strong>{filteredEvents.length}</strong> events
-            </span>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="date">Date: Soonest first</option>
-              <option value="price">Price: Low to high</option>
-            </select>
-          </div>
-
-          {isLoading ? (
-            <div className="event-grid explore-grid">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="event-card skeleton"
-                  role="status"
-                  aria-label="Loading event"
-                >
-                  <div className="event-image skeleton-image" />
-                  <div className="event-info">
-                    <div className="skeleton-text" />
-                    <div className="skeleton-text" />
+              <div className="flex gap-12 border-t border-[var(--line)] pt-6 max-md:flex-col max-md:gap-[18px]">
+                <div>
+                  <Calendar className="w-5 h-5" />
+                  <div>
+                    <strong>
+                      {new Date(event.startAt).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </strong>
+                    <small>
+                      {new Date(event.startAt).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}{" "}
+                      onwards
+                    </small>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : filteredEvents.length > 0 ? (
-            <div className="event-grid explore-grid">
-              {filteredEvents.map((event) => (
-                <Link
-                  className="event-card"
-                  href={`/events/${event.id}`}
-                  key={event.id}
-                >
-                  <div
-                    className="event-image"
-                    style={{
-                      backgroundImage: event.coverImage
-                        ? `url(${event.coverImage})`
-                        : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    }}
-                  >
-                    <span className="event-tag">
-                      {event.category?.name || "Event"}
-                    </span>
-                    <button
-                      className="save-button"
-                      aria-label={`Save ${event.title}`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        // TODO: Implement wishlist
-                      }}
-                      type="button"
-                    >
-                      <Heart className="w-5 h-5" />
-                    </button>
+                <div>
+                  <MapPin className="w-5 h-5" />
+                  <div>
+                    <strong>{event.venueName}</strong>
+                    <small>{event.venueAddress}</small>
                   </div>
-                  <div className="event-info">
-                    <div>
-                      <p className="event-date">
-                        {new Date(event.startAt).toLocaleDateString("en-US", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </p>
-                      <h3>{event.title}</h3>
-                      <p className="event-place">
-                        {event.venueName}, {event.area?.name}
-                      </p>
-                    </div>
-                    <strong className="event-price">৳ {event.price}</strong>
+                </div>
+                <div>
+                  <Users className="w-5 h-5" />
+                  <div>
+                    <strong>{availableTickets} tickets left</strong>
+                    <small>{Math.round(ticketPercentage)}% sold</small>
                   </div>
-                </Link>
-              ))}
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-600 mb-4">No events found</p>
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedCategory(undefined);
-                  setSelectedArea(undefined);
-                }}
-                className="text-link"
-              >
-                Clear filters
-              </button>
-            </div>
-          )}
+          </div>
+          <BookingPanel event={event} />
         </div>
       </section>
     </main>

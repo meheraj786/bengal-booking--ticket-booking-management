@@ -21,13 +21,13 @@ export class MailService {
   async sendVerification(email: string, token: string) {
     const url = `${process.env.FRONTEND_URL ?? "http://localhost:3000"}/verify-email?token=${token}`;
     if (!this.transporter) {
-      console.info(`[Evently] Verification link for ${email}: ${url}`);
+      console.info(`[Bengal Booking] Verification link for ${email}: ${url}`);
       return;
     }
     await this.transporter.sendMail({
       from: process.env.MAIL_FROM ?? "no-reply@evently.local",
       to: email,
-      subject: "Verify your Evently email",
+      subject: "Verify your Bengal Booking email",
       text: `Verify your email: ${url}`,
     });
   }

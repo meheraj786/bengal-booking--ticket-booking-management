@@ -1,23 +1,5 @@
 export type EventStatus = "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
 
-export interface EventCategory {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-export interface EventArea {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-export interface EventSeller {
-  id: string;
-  name: string;
-  image: string | null;
-}
-
 export interface Event {
   id: string;
   sellerId: string;
@@ -106,4 +88,28 @@ export interface EventFormInput {
   maxTicketsPerBooking: number;
   price: number;
   coverImage?: string;
+}
+
+export interface EventCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventArea {
+  id: string;
+  name: string;
+  slug: string;
+  divisionId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventSeller {
+  id: string;
+  name: string;
+  image: string | null;
 }

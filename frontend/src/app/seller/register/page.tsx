@@ -25,8 +25,11 @@ export default function SellerRegisterPage() {
 
   return (
     <main className="auth-shell">
-      <Link className="brand" href="/">
-        evently<span>.</span>
+      <Link
+        className="block text-[25px] font-extrabold tracking-[-1.5px]"
+        href="/"
+      >
+        bengalBooking<span className="text-primary">.</span>
       </Link>
       <div className="auth-card">
         <p className="eyebrow">SELLER SIGN UP</p>
@@ -103,7 +106,7 @@ export default function SellerRegisterPage() {
           )}
           <Button
             type="submit"
-            className="button auth-button w-full"
+            className="w-full bg-[var(--coral)] font-sans text-xs font-bold text-white hover:bg-[var(--coral-dark)]"
             disabled={mutation.isPending}
           >
             {mutation.isPending ? "Creating..." : "Create seller account →"}

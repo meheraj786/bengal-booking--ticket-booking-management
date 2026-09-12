@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Evently - Find Your Next Event",
+  title: "Bengal Booking - Find Your Next Event",
   description: "Discover and book amazing events in your city",
 };
 

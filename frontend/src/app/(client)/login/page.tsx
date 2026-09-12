@@ -35,22 +35,32 @@ export default function LoginPage() {
   });
 
   return (
-    <main className="auth-shell">
-      <Link className="brand" href="/">
-        evently<span>.</span>
+    <main className="min-h-screen bg-[var(--lavender)] px-[5%] py-[38px]">
+      <Link
+        className="block text-[25px] font-extrabold tracking-[-1.5px]"
+        href="/"
+      >
+        bengalBooking<span className="text-primary">.</span>
       </Link>
-      <div className="auth-card">
-        <p className="eyebrow">WELCOME BACK</p>
-        <h1>
+      <div className="mx-auto mt-[35px] w-full max-w-[460px] bg-[var(--cream)] p-12 text-left max-sm:px-6 max-sm:py-9">
+        <p className="mb-[18px] font-sans text-[10px] font-bold tracking-[2.2px] text-[var(--coral-dark)]">
+          WELCOME BACK
+        </p>
+        <h1 className="m-0 text-[47px] font-medium leading-[0.98] tracking-[-4px]">
           Good to see
           <br />
           <em>you again.</em>
         </h1>
-        <p className="auth-intro">Your next great moment is waiting.</p>
-        <a className="google-button" href={authService.googleLoginUrl()}>
+        <p className="my-[15px] mb-7 max-w-[300px] font-sans text-[13px] leading-[1.6] text-[var(--muted)]">
+          Your next great moment is waiting.
+        </p>
+        <a
+          className="block w-full border border-[var(--line)] bg-white p-[13px] text-center font-sans font-bold text-[#4285f4]"
+          href={authService.googleLoginUrl()}
+        >
           G <span>Continue with Google</span>
         </a>
-        <div className="or">
+        <div className="my-6 flex items-center gap-2.5 font-sans text-[10px] text-[var(--muted)] before:h-px before:flex-1 before:bg-[var(--line)] after:h-px after:flex-1 after:bg-[var(--line)]">
           <span>or continue with email</span>
         </div>
         <form id="login-form" onSubmit={handleSubmit}>
@@ -98,7 +108,7 @@ export default function LoginPage() {
             />
 
             {mutation.isError && (
-              <p className="auth-error" role="alert">
+              <p className="font-sans text-[11px] text-[#b33e37]" role="alert">
                 {mutation.error.message}
               </p>
             )}
@@ -108,14 +118,14 @@ export default function LoginPage() {
         <Button
           type="submit"
           form="login-form"
-          className="button auth-button w-full"
+          className="mt-0 w-full bg-[var(--coral)] font-sans text-xs font-bold text-white hover:bg-[var(--coral-dark)]"
           disabled={mutation.isPending}
         >
           {mutation.isPending ? "Signing in..." : "Log in →"}
         </Button>
 
-        <p className="auth-switch">
-          New to Evently? <Link href="/register">Create an account</Link>
+        <p className="mt-4 text-center font-sans text-[11px] text-[var(--muted)]">
+          New to Bengal Booking? <Link href="/register">Create an account</Link>
         </p>
       </div>
     </main>

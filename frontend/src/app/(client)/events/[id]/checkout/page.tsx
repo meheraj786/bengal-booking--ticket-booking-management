@@ -69,8 +69,8 @@ export default function CheckoutPage() {
 
   if (bookingLoading) {
     return (
-      <main className="route-shell">
-        <div className="wrap">
+      <main className="min-h-screen">
+        <div className="mx-auto w-[min(1180px,calc(100%-48px))] max-md:w-[calc(100%-32px)]">
           <div className="text-center py-12">Loading checkout...</div>
         </div>
       </main>
@@ -79,8 +79,8 @@ export default function CheckoutPage() {
 
   if (!booking || !event) {
     return (
-      <main className="route-shell">
-        <div className="wrap">
+      <main className="min-h-screen">
+        <div className="mx-auto w-[min(1180px,calc(100%-48px))] max-md:w-[calc(100%-32px)]">
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">Booking not found</p>
             <Button asChild>
@@ -101,9 +101,12 @@ export default function CheckoutPage() {
   const seconds = timeRemaining % 60;
 
   return (
-    <main className="route-shell">
-      <section className="wrap">
-        <Link href={`/events/${eventId}`} className="back-link">
+    <main className="min-h-screen">
+      <section className="mx-auto w-[min(1180px,calc(100%-48px))] max-md:w-[calc(100%-32px)]">
+        <Link
+          href={`/events/${eventId}`}
+          className="mb-[30px] inline-block font-sans text-[11px] text-[var(--muted)]"
+        >
           ← Back to event
         </Link>
 

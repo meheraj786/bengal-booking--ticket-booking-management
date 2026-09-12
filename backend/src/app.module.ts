@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { InfrastructureModule } from "./infrastructure/infrastructure.module";
+import { CommonModule } from "./common/common.module";
 import { AuthModule } from "./auth/auth.module";
 import { AreaModule } from "./area/area.module";
 import { DivisionModule } from "./division/division.module";
@@ -16,6 +17,7 @@ import { RequestContextMiddleware } from "./common/request-context.middleware";
 @Module({
   imports: [
     InfrastructureModule,
+    CommonModule,
     AuthModule,
     AreaModule,
     DivisionModule,

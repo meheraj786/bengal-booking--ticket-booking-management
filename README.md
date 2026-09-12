@@ -1,6 +1,6 @@
-# Evently
+# Bengal Booking
 
-Evently is a separate Next.js and NestJS event-booking platform. The initial slice includes the complete Prisma domain model and the concurrency-critical booking flow: immediate per-ticket locks, ten-minute pending bookings, payment confirmation, and expiry cleanup.
+Bengal Booking is a separate Next.js and NestJS event-booking platform. The initial slice includes the complete Prisma domain model and the concurrency-critical booking flow: immediate per-ticket locks, ten-minute pending bookings, payment confirmation, and expiry cleanup.
 
 ## Structure
 

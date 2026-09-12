@@ -54,7 +54,7 @@ export function SellerSidebar() {
             <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center font-bold text-blue-600">
               E
             </div>
-            <span className="font-bold text-lg">Evently Seller</span>
+            <span className="font-bold text-lg">Bengal Booking Seller</span>
           </Link>
         </div>
 

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -18,7 +19,7 @@ import { AreaService } from "./area.service";
 
 @Controller("areas")
 export class AreaController {
-  constructor(private readonly service: AreaService) {}
+  constructor(@Inject(AreaService) private readonly service: AreaService) {}
 
   @Get()
   list(@Query("divisionId") divisionId?: string) {

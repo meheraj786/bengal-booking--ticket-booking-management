@@ -14,6 +14,7 @@ import {
   useUpdateArea,
   useDeleteArea,
 } from "@/hooks/useArea";
+import { useDivisionList } from "@/hooks/useDivision";
 import type { Area } from "@/types/area.types";
 import type { AreaFormInput } from "@/lib/validators";
 import type { PaginationParams } from "@/components/data-table";
@@ -28,6 +29,7 @@ export default function AreasPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: areas = [], isLoading, error } = useAreaList();
+  const { data: divisions = [] } = useDivisionList();
   const createArea = useCreateArea();
   const updateArea = useUpdateArea(editingArea?.id || "");
   const deleteArea = useDeleteArea();
@@ -170,6 +172,7 @@ export default function AreasPage() {
         onSubmit={editingArea ? handleUpdate : handleCreate}
         area={editingArea}
         isLoading={createArea.isPending || updateArea.isPending}
+        divisions={divisions}
       />
 
       <DeleteDialog
