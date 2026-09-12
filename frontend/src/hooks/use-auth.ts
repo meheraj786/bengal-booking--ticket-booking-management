@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { authService } from "@/services/auth.service";
 import { ApiError } from "@/lib/api-client";
+import { authStore } from "@/store/auth.store";
 import type {
   CurrentUser,
   LoginPayload,
@@ -61,8 +62,10 @@ export function useLogin(): UseMutationResult<
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: authService.login,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: authKeys.me() });
+    onSuccess: async () => {
+      const currentUser = await authService.getMe();
+      authStore.setUser(currentUser);
+      queryClient.setQueryData(authKeys.me(), currentUser);
     },
   });
 }

@@ -11,6 +11,7 @@ import {
   Menu,
   Grid3x3,
   MapPin,
+  Map,
   ShoppingCart,
 } from "lucide-react";
 import { useState } from "react";
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/categories", label: "Categories", icon: Grid3x3 },
+  { href: "/admin/divisions", label: "Divisions", icon: Map },
   { href: "/admin/areas", label: "Areas", icon: MapPin },
   { href: "/admin/events", label: "Events", icon: Calendar },
   { href: "/admin/bookings", label: "Bookings", icon: ShoppingCart },

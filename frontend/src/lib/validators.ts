@@ -54,6 +54,9 @@ export const areaFormSchema = z.object({
 });
 export type AreaFormInput = z.infer<typeof areaFormSchema>;
 
+export const divisionFormSchema = areaFormSchema;
+export type DivisionFormInput = z.infer<typeof divisionFormSchema>;
+
 export const categoryFormSchema = z.object({
   name: z
     .string()

@@ -3,42 +3,46 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
   UseGuards,
-  Query,
 } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import { JwtAuthGuard } from "../common/jwt-auth.guard";
 import { Roles } from "../common/roles.decorator";
 import { RolesGuard } from "../common/roles.guard";
-import { AreaDto, UpdateAreaDto } from "./area.dto";
-import { AreaService } from "./area.service";
+import { DivisionDto, UpdateDivisionDto } from "./division.dto";
+import { DivisionService } from "./division.service";
 
-@Controller("areas")
-export class AreaController {
-  constructor(private readonly service: AreaService) {}
+@Controller("divisions")
+export class DivisionController {
+  constructor(
+    @Inject(DivisionService) private readonly service: DivisionService,
+  ) {}
 
   @Get()
-  list(@Query("divisionId") divisionId?: string) {
-    if (divisionId) {
-      return this.service.listByDivision(divisionId);
-    }
+  list() {
     return this.service.list();
+  }
+
+  @Get(":id")
+  get(@Param("id") id: string) {
+    return this.service.get(id);
   }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  create(@Body() dto: AreaDto) {
+  create(@Body() dto: DivisionDto) {
     return this.service.create(dto);
   }
 
   @Patch(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)
-  update(@Param("id") id: string, @Body() dto: UpdateAreaDto) {
+  update(@Param("id") id: string, @Body() dto: UpdateDivisionDto) {
     return this.service.update(id, dto);
   }
 

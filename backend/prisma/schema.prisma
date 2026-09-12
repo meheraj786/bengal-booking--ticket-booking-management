@@ -25,6 +25,28 @@ model User {
   bookings              Booking[]
 }
 
+model Division {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  areas     Area[]
+}
+
+model Area {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  divisionId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  division   Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  events     Event[]
+
+  @@unique([divisionId, slug])
+}
+
 model Category {
   id          String   @id @default(uuid())
   name        String   @unique
@@ -33,15 +55,6 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   events      Event[]
-}
-
-model Area {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  events    Event[]
 }
 
 model Event {

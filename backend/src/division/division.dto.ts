@@ -1,18 +1,15 @@
 import { IsString, MinLength, IsOptional } from "class-validator";
 
-export class AreaDto {
+export class DivisionDto {
   @IsString()
   @MinLength(2)
   name!: string;
 
   @IsString()
   slug!: string;
-
-  @IsString()
-  divisionId!: string;
 }
 
-export class UpdateAreaDto {
+export class UpdateDivisionDto {
   @IsString()
   @MinLength(2)
   @IsOptional()
@@ -21,8 +18,4 @@ export class UpdateAreaDto {
   @IsString()
   @IsOptional()
   slug?: string;
-
-  @IsString()
-  @IsOptional()
-  divisionId?: string;
 }

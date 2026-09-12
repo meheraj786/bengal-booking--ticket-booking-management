@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -27,9 +28,9 @@ export interface AuthTokenResult {
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly jwt: JwtService,
-    private readonly mail: MailService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(JwtService) private readonly jwt: JwtService,
+    @Inject(MailService) private readonly mail: MailService,
   ) {}
 
   private token(user: AuthTokenUser): AuthTokenResult {

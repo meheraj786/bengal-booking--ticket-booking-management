@@ -1,34 +1,88 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 import { useEventList, useEventFilters } from "@/hooks/useEvent";
 
 export default function ExplorePage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    string | undefined
-  >();
-  const [selectedArea, setSelectedArea] = useState<string | undefined>();
-  const [priceRange, setPriceRange] = useState(5000);
-  const [sortBy, setSortBy] = useState("date");
+  return (
+    <Suspense fallback={<main className="route-shell" />}>
+      <ExplorePageContent />
+    </Suspense>
+  );
+}
+
+function ExplorePageContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentPathname = pathname ?? "/explore";
+  const searchParams = useSearchParams();
+  const queryString = searchParams?.toString() ?? "";
+  const currentParams = new URLSearchParams(queryString);
+  const [searchQuery, setSearchQuery] = useState(
+    currentParams.get("search") || "",
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    currentParams.get("category") || undefined,
+  );
+  const [selectedDivision, setSelectedDivision] = useState(
+    currentParams.get("division") || "",
+  );
+  const [selectedArea, setSelectedArea] = useState(
+    currentParams.get("area") || "",
+  );
+  const [minPrice, setMinPrice] = useState(currentParams.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState(currentParams.get("maxPrice") || "");
+  const [startDate, setStartDate] = useState(
+    currentParams.get("startDate") || "",
+  );
+  const [endDate, setEndDate] = useState(currentParams.get("endDate") || "");
+  const [sortBy, setSortBy] = useState(currentParams.get("sort") || "date");
+
+  useEffect(() => {
+    setSearchQuery(currentParams.get("search") || "");
+    setSelectedCategory(currentParams.get("category") || undefined);
+    setSelectedDivision(currentParams.get("division") || "");
+    setSelectedArea(currentParams.get("area") || "");
+    setMinPrice(currentParams.get("minPrice") || "");
+    setMaxPrice(currentParams.get("maxPrice") || "");
+    setStartDate(currentParams.get("startDate") || "");
+    setEndDate(currentParams.get("endDate") || "");
+    setSortBy(currentParams.get("sort") || "date");
+  }, [queryString]);
+
+  const updateUrl = (key: string, value?: string) => {
+    const params = new URLSearchParams(currentParams.toString());
+    if (value) params.set(key, value);
+    else params.delete(key);
+    router.replace(
+      `${currentPathname}${params.toString() ? `?${params}` : ""}`,
+      {
+        scroll: false,
+      },
+    );
+  };
 
   const { data: filters } = useEventFilters();
   const { data: events = [], isLoading } = useEventList({
     search: searchQuery || undefined,
     category: selectedCategory,
-    area: selectedArea,
+    division: selectedDivision || undefined,
+    area: selectedArea || undefined,
+    minPrice: minPrice || undefined,
+    maxPrice: maxPrice || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
   });
 
-  const filteredEvents = events
-    .filter((event) => Number(event.price) <= priceRange)
-    .sort((a, b) => {
-      if (sortBy === "price") {
-        return Number(a.price) - Number(b.price);
-      }
-      return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
-    });
+  const filteredEvents = events.sort((a, b) => {
+    if (sortBy === "price") {
+      return Number(a.price) - Number(b.price);
+    }
+    return new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
+  });
 
   return (
     <main className="route-shell">
@@ -54,7 +108,10 @@ export default function ExplorePage() {
             <input
               placeholder="Event name or keyword"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                updateUrl("search", e.target.value);
+              }}
             />
           </label>
 
@@ -62,7 +119,11 @@ export default function ExplorePage() {
             Category
             <select
               value={selectedCategory || ""}
-              onChange={(e) => setSelectedCategory(e.target.value || undefined)}
+              onChange={(e) => {
+                const value = e.target.value || undefined;
+                setSelectedCategory(value);
+                updateUrl("category", value);
+              }}
             >
               <option value="">All categories</option>
               {filters?.categories?.map((cat) => (
@@ -74,10 +135,25 @@ export default function ExplorePage() {
           </label>
 
           <label>
+            Division slug
+            <input
+              placeholder="e.g. dhaka"
+              value={selectedDivision}
+              onChange={(e) => {
+                setSelectedDivision(e.target.value);
+                updateUrl("division", e.target.value);
+              }}
+            />
+          </label>
+
+          <label>
             Where
             <select
-              value={selectedArea || ""}
-              onChange={(e) => setSelectedArea(e.target.value || undefined)}
+              value={selectedArea}
+              onChange={(e) => {
+                setSelectedArea(e.target.value);
+                updateUrl("area", e.target.value);
+              }}
             >
               <option value="">All locations</option>
               {filters?.areas?.map((area) => (
@@ -89,13 +165,54 @@ export default function ExplorePage() {
           </label>
 
           <label>
-            Price range: ৳{priceRange}
+            Minimum price
             <input
-              type="range"
+              type="number"
               min="0"
-              max="10000"
-              value={priceRange}
-              onChange={(e) => setPriceRange(Number(e.target.value))}
+              placeholder="0"
+              value={minPrice}
+              onChange={(e) => {
+                setMinPrice(e.target.value);
+                updateUrl("minPrice", e.target.value);
+              }}
+            />
+          </label>
+
+          <label>
+            Maximum price
+            <input
+              type="number"
+              min="0"
+              placeholder="10000"
+              value={maxPrice}
+              onChange={(e) => {
+                setMaxPrice(e.target.value);
+                updateUrl("maxPrice", e.target.value);
+              }}
+            />
+          </label>
+
+          <label>
+            From date
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                updateUrl("startDate", e.target.value);
+              }}
+            />
+          </label>
+
+          <label>
+            To date
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => {
+                setEndDate(e.target.value);
+                updateUrl("endDate", e.target.value);
+              }}
             />
           </label>
         </aside>
@@ -104,7 +221,10 @@ export default function ExplorePage() {
           <div className="filter-tabs">
             <button
               className={!selectedCategory ? "selected" : ""}
-              onClick={() => setSelectedCategory(undefined)}
+              onClick={() => {
+                setSelectedCategory(undefined);
+                updateUrl("category");
+              }}
             >
               All events
             </button>
@@ -123,7 +243,13 @@ export default function ExplorePage() {
             <span>
               Showing <strong>{filteredEvents.length}</strong> events
             </span>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                updateUrl("sort", e.target.value);
+              }}
+            >
               <option value="date">Date: Soonest first</option>
               <option value="price">Price: Low to high</option>
             </select>
@@ -203,7 +329,14 @@ export default function ExplorePage() {
                 onClick={() => {
                   setSearchQuery("");
                   setSelectedCategory(undefined);
-                  setSelectedArea(undefined);
+                  setSelectedDivision("");
+                  setSelectedArea("");
+                  setMinPrice("");
+                  setMaxPrice("");
+                  setStartDate("");
+                  setEndDate("");
+                  setSortBy("date");
+                  router.replace(currentPathname, { scroll: false });
                 }}
                 className="text-link"
               >

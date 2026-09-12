@@ -3,6 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 const protectedPrefixes = ["/admin", "/seller", "/bookings"];
 
 export function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
   const requiresAuth = protectedPrefixes.some((prefix) =>
     request.nextUrl.pathname.startsWith(prefix),
   );

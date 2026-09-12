@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -11,14 +12,51 @@ import { CreateEventDto, UpdateEventDto } from "./event.dto";
 
 @Injectable()
 export class EventService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  list(filters: { category?: string; area?: string; search?: string } = {}) {
+  list(
+    filters: {
+      category?: string;
+      division?: string;
+      area?: string;
+      search?: string;
+      minPrice?: string;
+      maxPrice?: string;
+      startDate?: string;
+      endDate?: string;
+    } = {},
+  ) {
+    const minPrice = this.parsePrice(filters.minPrice, "minPrice");
+    const maxPrice = this.parsePrice(filters.maxPrice, "maxPrice");
+    const startDate = this.parseDate(filters.startDate, "startDate");
+    const endDate = this.parseDate(filters.endDate, "endDate", true);
+
+    if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice)
+      throw new BadRequestException("minPrice cannot be greater than maxPrice");
+    if (startDate && endDate && startDate > endDate)
+      throw new BadRequestException("startDate cannot be after endDate");
+
     return this.prisma.event.findMany({
       where: {
         status: EventStatus.PUBLISHED,
         category: filters.category ? { slug: filters.category } : undefined,
-        area: filters.area ? { slug: filters.area } : undefined,
+        area:
+          filters.area || filters.division
+            ? {
+                slug: filters.area,
+                division: filters.division
+                  ? { slug: filters.division }
+                  : undefined,
+              }
+            : undefined,
+        price: {
+          gte: minPrice,
+          lte: maxPrice,
+        },
+        startAt: {
+          gte: startDate,
+          lte: endDate,
+        },
         OR: filters.search
           ? [
               { title: { contains: filters.search, mode: "insensitive" } },
@@ -37,6 +75,24 @@ export class EventService {
       },
       orderBy: { startAt: "asc" },
     });
+  }
+
+  private parsePrice(value: string | undefined, name: string) {
+    if (value === undefined) return undefined;
+    const price = Number(value);
+    if (!Number.isFinite(price) || price < 0)
+      throw new BadRequestException(`${name} must be a non-negative number`);
+    return price;
+  }
+
+  private parseDate(value: string | undefined, name: string, endOfDay = false) {
+    if (value === undefined) return undefined;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime()))
+      throw new BadRequestException(`${name} must be a valid date`);
+    if (endOfDay && /^\d{4}-\d{2}-\d{2}$/.test(value))
+      date.setUTCHours(23, 59, 59, 999);
+    return date;
   }
 
   categories() {

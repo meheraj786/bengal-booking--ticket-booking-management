@@ -48,8 +48,13 @@ export interface Event {
 
 export interface EventListFilters {
   category?: string;
+  division?: string;
   area?: string;
   search?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface CreateEventPayload {

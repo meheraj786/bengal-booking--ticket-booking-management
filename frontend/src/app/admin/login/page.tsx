@@ -28,14 +28,14 @@ export default function AdminLoginPage() {
           });
           return;
         }
-        router.push("/admin/dashboard");
+        router.replace("/admin");
         router.refresh();
       },
     });
   });
 
   return (
-    <main className="auth-shell">
+    <main className="auth-shell bg-red-500">
       <div className="auth-card">
         <p className="eyebrow">ADMIN ACCESS</p>
         <h1>
@@ -46,7 +46,14 @@ export default function AdminLoginPage() {
         <p className="auth-intro">
           Restricted area. Authorized personnel only.
         </p>
-        <form onSubmit={submit} className="space-y-4">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            void submit(event);
+          }}
+          className="space-y-4"
+          noValidate
+        >
           <div className="space-y-1.5">
             <Label htmlFor="email">Email address</Label>
             <Input

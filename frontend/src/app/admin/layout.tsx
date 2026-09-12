@@ -1,6 +1,4 @@
-import { ProtectedRoute } from "@/lib/protectedRoute";
-import { AdminHeader } from "@/components/admin/header";
-import { AdminSidebar } from "@/components/admin/sidebar";
+import { AdminLayoutContent } from "./admin-layout-content";
 
 export const metadata = {
   title: "Admin Dashboard - Evently",
@@ -12,15 +10,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <ProtectedRoute requiredRoles={["SUPER_ADMIN"]}>
-      <div className="flex">
-        <AdminSidebar />
-        <div className="flex-1 md:ml-64">
-          <AdminHeader />
-          <main className="mt-16 p-6">{children}</main>
-        </div>
-      </div>
-    </ProtectedRoute>
-  );
+  return <AdminLayoutContent>{children}</AdminLayoutContent>;
 }

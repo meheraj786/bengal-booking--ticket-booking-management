@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Post,
   Query,
   Req,
@@ -17,7 +18,7 @@ import { JwtAuthGuard } from "../common/jwt-auth.guard";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
   private setAuthCookie(response: Response, accessToken: string) {
     response.cookie("evently_access_token", accessToken, {
