@@ -14,16 +14,20 @@ import { Button } from "@/components/ui/button";
 import { registerSchema, type RegisterInput } from "@/lib/validators";
 import { useRegister } from "@/hooks/use-auth";
 import { authService } from "@/services/auth.service";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const mutation = useRegister();
+  const router = useRouter();
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "", phone: "" },
   });
 
   const handleSubmit = form.handleSubmit((values) =>
-    mutation.mutate({ ...values, role: "USER" }),
+    mutation.mutate({ ...values, role: "USER" }, {
+      onSuccess: () => router.push(`/verify-email?email=${encodeURIComponent(values.email)}`),
+    }),
   );
 
   return (

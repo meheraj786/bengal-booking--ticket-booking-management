@@ -4,7 +4,6 @@ import type {
   CreateBookingPayload,
   CreateBookingResponse,
   CheckoutPayload,
-  CheckoutResponse,
   ConfirmBookingPayload,
 } from "@/types/booking.types";
 
@@ -29,8 +28,8 @@ export const bookingService = {
     return data;
   },
 
-  checkout: async (payload: CheckoutPayload): Promise<CheckoutResponse> => {
-    const { data } = await apiClient.post<CheckoutResponse>(
+  checkout: async (payload: CheckoutPayload): Promise<Booking> => {
+    const { data } = await apiClient.post<Booking>(
       "/bookings/checkout",
       payload,
     );

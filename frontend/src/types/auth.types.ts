@@ -32,6 +32,7 @@ export interface RegisterPayload {
 export interface RegisterResponse {
   message: string;
   userId: string;
+  user: AuthUser;
 }
 
 export interface LoginPayload {
@@ -45,6 +46,10 @@ export interface LoginResponse {
 
 export interface VerifyEmailResponse {
   message: string;
+}
+
+export interface BecomeSellerResponse {
+  user: AuthUser;
 }
 
 export interface LogoutResponse {

@@ -7,6 +7,7 @@ import type {
   RegisterPayload,
   RegisterResponse,
   VerifyEmailResponse,
+  BecomeSellerResponse,
 } from "@/types/auth.types";
 
 export const authService = {
@@ -35,6 +36,20 @@ export const authService = {
     const { data } = await apiClient.get<VerifyEmailResponse>(
       "/auth/verify-email",
       { params: { token } },
+    );
+    return data;
+  },
+
+  resendVerification: async (): Promise<VerifyEmailResponse> => {
+    const { data } = await apiClient.post<VerifyEmailResponse>(
+      "/auth/resend-verification",
+    );
+    return data;
+  },
+
+  becomeSeller: async (): Promise<BecomeSellerResponse> => {
+    const { data } = await apiClient.patch<BecomeSellerResponse>(
+      "/auth/become-seller",
     );
     return data;
   },

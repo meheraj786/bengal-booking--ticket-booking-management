@@ -1,11 +1,12 @@
 import {
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { randomBytes } from "node:crypto";
+import { randomInt } from "node:crypto";
 import { compare, hash } from "bcryptjs";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { MailService } from "./mail.service";
@@ -57,22 +58,26 @@ export class AuthService {
       where: { email: dto.email.toLowerCase() },
     });
     if (exists) throw new ConflictException("Email is already registered");
-    const verificationToken = randomBytes(32).toString("hex");
+    const verificationToken = String(randomInt(100000, 1000000));
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
         email: dto.email.toLowerCase(),
         phone: dto.phone,
+        role: "USER",
         passwordHash: await hash(dto.password, 12),
         verificationToken,
         verificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
     await this.mail.sendVerification(user.email, verificationToken);
+    const auth = this.token(user);
     return {
       message:
         "Registration successful. Check your email to verify your account.",
       userId: user.id,
+      accessToken: auth.accessToken,
+      user: auth.user,
     };
   }
 
@@ -98,14 +103,52 @@ export class AuthService {
     return { message: "Email verified successfully" };
   }
 
+  async resendVerification(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+    if (!user) throw new UnauthorizedException("Account not found");
+    if (user.isVerified) return { message: "Email is already verified" };
+    const verificationToken = String(randomInt(100000, 1000000));
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        verificationToken,
+        verificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+    await this.mail.sendVerification(user.email, verificationToken);
+    return { message: "A new verification OTP has been sent to your email" };
+  }
+
+  async becomeSeller(userId: string) {
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isVerified: true, role: true },
+    });
+    if (!currentUser) throw new UnauthorizedException("Account not found");
+    if (!currentUser.isVerified)
+      throw new ForbiddenException(
+        "Verify your email before becoming a seller",
+      );
+    if (currentUser.role === "SELLER")
+      throw new ConflictException("Account is already a seller");
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { role: "SELLER" },
+    });
+    return this.token(user);
+  }
+
   async login(email: string, password: string): Promise<AuthTokenResult> {
     const user = await this.prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
     if (!user?.passwordHash || !(await compare(password, user.passwordHash)))
       throw new UnauthorizedException("Invalid email or password");
-    if (!user.isVerified)
-      throw new UnauthorizedException("Verify your email before signing in");
+    // if (!user.isVerified)
+    //   throw new UnauthorizedException("Verify your email before signing in");
     if (user.status !== "ACTIVE")
       throw new UnauthorizedException("Account is suspended");
     return this.token(user);

@@ -63,7 +63,7 @@ export function useCreateEvent(): UseMutationResult<
   return useMutation({
     mutationFn: eventService.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
       queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
       queryClient.invalidateQueries({ queryKey: ["sellerEvents"] });
       queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
@@ -80,7 +80,7 @@ export function useUpdateEvent(
     mutationFn: (payload) => eventService.update(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
       queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
       queryClient.invalidateQueries({ queryKey: ["sellerEvents", "detail", id] });
       queryClient.invalidateQueries({ queryKey: ["sellerEvents"] });
@@ -98,7 +98,7 @@ export function usePublishEvent(
     mutationFn: () => eventService.publish(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
       queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
       queryClient.invalidateQueries({ queryKey: ["sellerEvents", "detail", id] });
       queryClient.invalidateQueries({ queryKey: ["sellerEvents"] });
@@ -113,7 +113,7 @@ export function useDeleteEvent(): UseMutationResult<Event, ApiError, string> {
   return useMutation({
     mutationFn: (id) => eventService.delete(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
       queryClient.invalidateQueries({ queryKey: ["sellerEvents", "detail", id] });

@@ -146,7 +146,7 @@ export default function SellerEventsPage() {
           <p className="text-gray-600">Create and manage your events</p>
         </div>
         <Button asChild>
-          <Link href="/seller/events/create">
+          <Link href="/seller/terms">
             <Plus className="w-4 h-4 mr-2" />
             Create Event
           </Link>

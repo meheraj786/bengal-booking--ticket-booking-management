@@ -13,7 +13,6 @@ import type {
   CreateBookingPayload,
   CreateBookingResponse,
   CheckoutPayload,
-  CheckoutResponse,
   ConfirmBookingPayload,
 } from "@/types/booking.types";
 import { sellerBookingKeys } from "@/hooks/useSellerBooking";
@@ -69,7 +68,7 @@ export function useCreateBooking(): UseMutationResult<
 }
 
 export function useCheckoutBooking(): UseMutationResult<
-  CheckoutResponse,
+  Booking,
   ApiError,
   CheckoutPayload
 > {
@@ -78,7 +77,7 @@ export function useCheckoutBooking(): UseMutationResult<
     mutationFn: bookingService.checkout,
     onSuccess: (data) => {
       queryClient.invalidateQueries({
-        queryKey: bookingKeys.detail(data.bookingId),
+        queryKey: bookingKeys.detail(data.id),
       });
       queryClient.invalidateQueries({ queryKey: bookingKeys.list() });
       queryClient.invalidateQueries({ queryKey: sellerBookingKeys.all });

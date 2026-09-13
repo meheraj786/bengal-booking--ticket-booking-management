@@ -36,9 +36,8 @@ export function useCreateDivision(): UseMutationResult<
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: divisionService.create,
-    onSuccess: (_, id) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: divisionKeys.list() });
-      queryClient.invalidateQueries({ queryKey: divisionKeys.detail(id) });
     },
   });
 }

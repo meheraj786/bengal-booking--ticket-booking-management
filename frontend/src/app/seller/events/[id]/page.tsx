@@ -290,7 +290,7 @@ export default function SellerEventDetailPage() {
         open={isTicketDialogOpen}
         onOpenChange={setIsTicketDialogOpen}
         onSubmit={(data) => {
-          createTickets.mutate(data, {
+          createTickets.mutate({ ...data, description: data.description ?? "" }, {
             onSuccess: () => {
               setIsTicketDialogOpen(false);
             },

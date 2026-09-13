@@ -4,6 +4,7 @@ import {
   Get,
   Inject,
   Post,
+  Patch,
   Query,
   Req,
   Res,
@@ -32,13 +33,35 @@ export class AuthController {
 
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post("register")
-  register(@Body() dto: RegisterDto) {
-    return this.auth.register(dto);
+  async register(
+    @Body() dto: RegisterDto,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.auth.register(dto);
+    this.setAuthCookie(response, result.accessToken);
+    return { message: result.message, userId: result.userId, user: result.user };
   }
 
   @Get("verify-email")
   verifyEmail(@Query("token") token: string) {
     return this.auth.verifyEmail(token);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post("resend-verification")
+  resendVerification(@Req() request: Request) {
+    return this.auth.resendVerification((request.user as AuthTokenUser).email);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch("become-seller")
+  async becomeSeller(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.auth.becomeSeller((request.user as AuthTokenUser).id);
+    this.setAuthCookie(response, result.accessToken);
+    return { user: result.user };
   }
 
   @Throttle({ default: { limit: 10, ttl: 60000 } })

@@ -31,6 +31,15 @@ export interface Event {
     tickets: number;
     bookings: number;
   };
+  tickets?: EventTicket[];
+}
+
+export interface EventTicket {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  status: "AVAILABLE" | "LOCKED" | "SOLD" | "CANCELLED";
 }
 
 export interface EventListFilters extends PaginationParams {

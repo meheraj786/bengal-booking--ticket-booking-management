@@ -40,7 +40,7 @@ export default function Footer() {
 
           <div>
             <Link
-              href="/seller/events/create"
+              href="/seller/terms"
               className="inline-flex items-center gap-2 bg-[#ff5d41] hover:bg-[#eb4f34] active:scale-95 !text-white font-semibold text-xs sm:text-sm px-6 py-3 rounded-full shadow-[0_4px_20px_rgba(255,93,65,0.4)] hover:shadow-[0_6px_24px_rgba(255,93,65,0.55)] transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5] !text-white" />

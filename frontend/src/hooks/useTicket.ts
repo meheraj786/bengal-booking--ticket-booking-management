@@ -40,7 +40,7 @@ export function useDeleteTicket(eventId: string): UseMutationResult<Ticket, ApiE
       queryClient.invalidateQueries({ queryKey: ticketKeys.list(eventId) });
       queryClient.invalidateQueries({ queryKey: ["sellerTickets", "list", eventId] });
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
     },
   });
 }
@@ -55,7 +55,7 @@ export function useCreateTickets(
       queryClient.invalidateQueries({ queryKey: ticketKeys.list(eventId) });
       queryClient.invalidateQueries({ queryKey: ["sellerTickets", "list", eventId] });
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
     },
   });
 }
@@ -71,7 +71,7 @@ export function useUpdateTicket(
       queryClient.invalidateQueries({ queryKey: ticketKeys.list(eventId) });
       queryClient.invalidateQueries({ queryKey: ["sellerTickets", "list", eventId] });
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
     },
   });
 }

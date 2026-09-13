@@ -46,7 +46,7 @@ export function useUpdateUserRole(): UseMutationResult<
   return useMutation({
     mutationFn: ({ id, payload }) => userService.updateRole(id, payload),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: userKeys.list() });
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
       queryClient.invalidateQueries({ queryKey: userKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
     },
@@ -62,7 +62,7 @@ export function useUpdateUserStatus(): UseMutationResult<
   return useMutation({
     mutationFn: ({ id, payload }) => userService.updateStatus(id, payload),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: userKeys.list() });
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
       queryClient.invalidateQueries({ queryKey: userKeys.detail(data.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
     },

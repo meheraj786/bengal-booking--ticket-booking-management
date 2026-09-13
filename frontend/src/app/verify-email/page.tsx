@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useVerifyEmail } from "@/hooks/use-auth";
+import { useResendVerification, useVerifyEmail } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 
@@ -18,31 +18,46 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams?.get("token");
   const verifyEmail = useVerifyEmail();
+  const resendVerification = useResendVerification();
   const [state, setState] = useState<VerificationState>("idle");
   const [message, setMessage] = useState("");
+  const [otp, setOtp] = useState(token ?? "");
+  const [resendMessage, setResendMessage] = useState("");
   const hasRun = useRef(false);
 
   useEffect(() => {
     if (hasRun.current) return;
     hasRun.current = true;
 
-    if (!token) {
-      setState("missing-token");
+    if (token) {
+      setState("verifying");
+      verifyEmail.mutate(token, {
+        onSuccess: (data) => { setMessage(data.message); setState("success"); },
+        onError: (error) => { setMessage(error.message); setState("error"); },
+      });
+    }
+  }, [token, verifyEmail]);
+
+  const submitOtp = () => {
+    if (!/^\d{6}$/.test(otp)) {
+      setMessage("Enter the 6-digit OTP from your email.");
+      setState("error");
       return;
     }
-
     setState("verifying");
-    verifyEmail.mutate(token, {
-      onSuccess: (data) => {
-        setMessage(data.message);
-        setState("success");
-      },
-      onError: (error) => {
-        setMessage(error.message);
-        setState("error");
-      },
+    verifyEmail.mutate(otp, {
+      onSuccess: (data) => { setMessage(data.message); setState("success"); },
+      onError: (error) => { setMessage(error.message); setState("error"); },
     });
-  }, [token, verifyEmail]);
+  };
+
+  const resendOtp = () => {
+    setResendMessage("");
+    resendVerification.mutate(undefined, {
+      onSuccess: (data) => setResendMessage(data.message),
+      onError: (error) => setResendMessage(error.message),
+    });
+  };
 
   return (
     <main className="auth-shell">
@@ -57,8 +72,23 @@ function VerifyEmailContent() {
 
         {state === "idle" && (
           <>
-            <h1>Preparing verification...</h1>
-            <p className="auth-intro">Please wait a moment.</p>
+            <h1>Verify your email</h1>
+            <p className="auth-intro">Enter the 6-digit OTP sent to your email.</p>
+            <input className="mt-6 w-full rounded border p-3 text-center text-2xl tracking-[0.5em]" maxLength={6} inputMode="numeric" value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ""))} placeholder="000000" />
+            <Button className="mt-4 w-full" onClick={submitOtp}>Verify email</Button>
+            <Button
+              variant="outline"
+              className="mt-2 w-full"
+              onClick={resendOtp}
+              disabled={resendVerification.isPending}
+            >
+              {resendVerification.isPending ? "Sending..." : "Resend OTP"}
+            </Button>
+            {resendMessage && (
+              <p className="mt-3 text-center text-sm text-slate-600" role="status">
+                {resendMessage}
+              </p>
+            )}
           </>
         )}
 
@@ -87,7 +117,7 @@ function VerifyEmailContent() {
               asChild
               className="mt-4 w-full bg-[var(--coral)] font-sans text-xs font-bold text-white hover:bg-[var(--coral-dark)]"
             >
-              <Link href="/login">Continue to login →</Link>
+              <Link href="/explore">Browse events →</Link>
             </Button>
           </>
         )}
@@ -108,6 +138,10 @@ function VerifyEmailContent() {
               <Button asChild className="w-full">
                 <Link href="/login">Try logging in</Link>
               </Button>
+              <Button variant="outline" className="w-full" onClick={resendOtp} disabled={resendVerification.isPending}>
+                {resendVerification.isPending ? "Sending..." : "Resend OTP"}
+              </Button>
+              {resendMessage && <p className="text-center text-sm text-slate-600">{resendMessage}</p>}
             </div>
           </>
         )}
@@ -117,15 +151,16 @@ function VerifyEmailContent() {
             <div className="flex justify-center mb-4">
               <AlertCircle className="w-12 h-12 text-yellow-600" />
             </div>
-            <h1>Missing verification link</h1>
-            <p className="auth-error" role="alert">
-              This page needs a valid verification token. Check the link in your
-              email.
-            </p>
+            <h1>Verify your email</h1>
+            <p className="auth-intro">Enter the 6-digit OTP sent to your email.</p>
+            <input className="mt-6 w-full rounded border p-3 text-center text-2xl tracking-[0.5em]" maxLength={6} inputMode="numeric" value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ""))} placeholder="000000" />
+            <Button className="mt-4 w-full" onClick={submitOtp}>Verify email</Button>
+            <Button variant="outline" className="mt-2 w-full" onClick={resendOtp} disabled={resendVerification.isPending}>
+              {resendVerification.isPending ? "Sending..." : "Resend OTP"}
+            </Button>
+            {resendMessage && <p className="mt-3 text-center text-sm text-slate-600">{resendMessage}</p>}
             <div className="flex flex-col gap-2 mt-6">
-              <Button asChild className="w-full">
-                <Link href="/register">Back to register</Link>
-              </Button>
+              <Button asChild variant="ghost" className="w-full"><Link href="/register">Back to register</Link></Button>
             </div>
           </>
         )}

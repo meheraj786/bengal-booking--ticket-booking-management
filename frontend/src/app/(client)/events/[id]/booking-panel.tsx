@@ -34,11 +34,12 @@ export function BookingPanel({ event }: BookingPanelProps) {
       {
         eventId: event.id,
         quantity,
+        ticketName: "General Admission",
         ...buyer,
       },
       {
         onSuccess: (data) => {
-          router.push(`/bookings/${data.bookingId}`);
+          router.push(`/bookings/${data.bookingId}/tickets`);
         },
       },
     );

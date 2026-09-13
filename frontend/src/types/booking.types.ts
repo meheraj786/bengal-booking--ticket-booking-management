@@ -25,6 +25,13 @@ export interface BookingEvent {
   price: string;
   totalTickets: number;
   soldTickets: number;
+  venueAddress: string;
+  description: string;
+  seller?: {
+    id: string;
+    name: string;
+    image: string | null;
+  };
 }
 
 export interface BookingPayment {
@@ -43,6 +50,7 @@ export interface Booking {
   userId: string;
   eventId: string;
   quantity: number;
+  ticketName: string;
   totalAmount: string;
   buyerName: string;
   buyerAddress: string;
@@ -66,9 +74,11 @@ export interface Booking {
 export interface CreateBookingPayload {
   eventId: string;
   quantity: number;
+  ticketName: string;
   buyerName: string;
   buyerAddress: string;
   buyerPhone: string;
+  ticketSelections?: { ticketName: string; quantity: number }[];
 }
 
 export interface CreateBookingResponse {
@@ -78,7 +88,13 @@ export interface CreateBookingResponse {
 }
 
 export interface CheckoutPayload {
-  bookingId: string;
+  eventId: string;
+  quantity: number;
+  ticketName: string;
+  buyerName: string;
+  buyerAddress: string;
+  buyerPhone: string;
+  ticketSelections?: { ticketName: string; quantity: number }[];
 }
 
 export interface CheckoutResponse {

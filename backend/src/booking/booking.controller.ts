@@ -9,6 +9,7 @@ import {
   UseGuards,
   Query,
   Patch,
+  ForbiddenException,
 } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import { BookingService } from "./booking.service";
@@ -87,7 +88,10 @@ export class BookingController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.USER)
   create(@Body() dto: CreateBookingDto, @CurrentUser() user: AuthUser) {
+    if (!user.isVerified)
+      throw new ForbiddenException("Verify your email before booking tickets");
     return this.bookings.createBooking(dto.eventId, user.id, dto.quantity, {
+      ticketName: dto.ticketName,
       buyerName: dto.buyerName,
       buyerAddress: dto.buyerAddress,
       buyerPhone: dto.buyerPhone,
@@ -116,6 +120,18 @@ export class BookingController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.USER)
   checkout(@Body() dto: CheckoutDto, @CurrentUser() user: AuthUser) {
+    if (dto.eventId && dto.quantity && dto.ticketName && dto.buyerName && dto.buyerAddress && dto.buyerPhone) {
+      if (!user.isVerified)
+        throw new ForbiddenException("Verify your email before booking tickets");
+      return this.bookings.completeBooking(dto.eventId, user.id, dto.quantity, {
+        ticketName: dto.ticketName,
+        ticketSelections: dto.ticketSelections,
+        buyerName: dto.buyerName,
+        buyerAddress: dto.buyerAddress,
+        buyerPhone: dto.buyerPhone,
+      });
+    }
+    if (!dto.bookingId) throw new ForbiddenException("Checkout details are required");
     return this.bookings.checkout(dto.bookingId, user.id);
   }
 }

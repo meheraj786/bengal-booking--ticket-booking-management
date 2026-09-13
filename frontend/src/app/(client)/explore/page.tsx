@@ -81,6 +81,8 @@ function ExplorePageContent() {
   const [sortBy, setSortBy] = useState(
     currentParams.get("sort") || "popularity",
   );
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
 
   useEffect(() => {
     const cat = currentParams.get("category");
@@ -104,6 +106,7 @@ function ExplorePageContent() {
   }, [queryString, currentParams]);
 
   const updateUrl = (newParams: Record<string, string | undefined>) => {
+    setPage(1);
     const params = new URLSearchParams(currentParams.toString());
     Object.entries(newParams).forEach(([key, value]) => {
       if (value && value !== "all") params.set(key, value);
@@ -147,6 +150,8 @@ function ExplorePageContent() {
       priceRange[1] < MAX_PRICE_LIMIT ? String(priceRange[1]) : undefined,
     startDate: startDate ? startDate.toISOString() : undefined,
     endDate: endDate ? endDate.toISOString() : undefined,
+    page,
+    limit: pageSize,
   });
   const events = eventResult?.data ?? [];
 
@@ -176,6 +181,7 @@ function ExplorePageContent() {
     (selectedArea !== "all" ? 1 : 0) +
     (startDate || endDate ? 1 : 0) +
     (priceRange[0] > 0 || priceRange[1] < MAX_PRICE_LIMIT ? 1 : 0);
+  const totalPages = eventResult?.pagination.totalPages ?? 0;
 
   const selectedAreaObj = filters?.areas?.find((a) => a.slug === selectedArea);
 
@@ -313,6 +319,17 @@ function ExplorePageContent() {
               No categories found
             </p>
           )}
+          {!isLoading && totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 pt-4">
+              <button type="button" className="rounded-lg border px-4 py-2 text-sm disabled:opacity-50" disabled={page === 1} onClick={() => setPage((value) => value - 1)}>
+                Previous
+              </button>
+              <span className="text-sm text-slate-600">Page {page} of {totalPages}</span>
+              <button type="button" className="rounded-lg border px-4 py-2 text-sm disabled:opacity-50" disabled={page >= totalPages} onClick={() => setPage((value) => value + 1)}>
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -429,7 +446,7 @@ function ExplorePageContent() {
           </div>
 
           <Link
-            href="/seller/events/create"
+            href="/seller/terms"
             className="inline-flex items-center gap-2 bg-[#ff5d41] hover:bg-[#eb4f34] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all active:scale-95 self-start sm:self-center"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />

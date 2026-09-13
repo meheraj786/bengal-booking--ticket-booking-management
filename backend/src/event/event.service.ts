@@ -35,7 +35,7 @@ export class EventService {
       throw new BadRequestException("startDate cannot be after endDate");
 
     const where: Prisma.EventWhereInput = {
-        // status: EventStatus.PUBLISHED,
+        status: EventStatus.PUBLISHED,
         category: filters.category ? { slug: filters.category } : undefined,
         area:
           filters.area || filters.division
@@ -98,6 +98,10 @@ export class EventService {
         area: true,
         seller: { select: { id: true, name: true, image: true } },
         _count: { select: { tickets: true, bookings: true } },
+        tickets: {
+          select: { id: true, name: true, description: true, price: true, status: true },
+          orderBy: { createdAt: "asc" },
+        },
       },
     });
     if (!event) throw new NotFoundException("Event not found");
@@ -201,6 +205,10 @@ export class EventService {
         category: true,
         area: true,
         _count: { select: { tickets: true, bookings: true } },
+        tickets: {
+          select: { id: true, name: true, description: true, price: true, status: true },
+          orderBy: { createdAt: "asc" },
+        },
       },
       orderBy: { createdAt: "desc" },
       }),

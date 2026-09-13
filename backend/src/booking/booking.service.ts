@@ -22,7 +22,7 @@ export class BookingService {
     eventId: string,
     userId: string,
     quantity: number,
-    buyer: { buyerName: string; buyerAddress: string; buyerPhone: string },
+    buyer: { buyerName: string; buyerAddress: string; buyerPhone: string; ticketName: string; ticketSelections?: { ticketName: string; quantity: number }[] },
   ) {
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
@@ -32,11 +32,21 @@ export class BookingService {
     if (quantity < 1 || quantity > event.maxTicketsPerBooking)
       throw new BadRequestException("Invalid quantity");
 
-    const candidates = await this.prisma.ticket.findMany({
-      where: { eventId, status: TicketStatus.AVAILABLE },
-      orderBy: { id: "asc" },
-      take: quantity,
-    });
+    const selections = buyer.ticketSelections?.length
+      ? buyer.ticketSelections
+      : [{ ticketName: buyer.ticketName, quantity }];
+    const selectedQuantity = selections.reduce((sum, item) => sum + item.quantity, 0);
+    if (selectedQuantity !== quantity)
+      throw new BadRequestException("Invalid ticket selection");
+    const candidates: Array<{ id: string; price: Prisma.Decimal }> = [];
+    for (const selection of selections) {
+      const tickets = await this.prisma.ticket.findMany({
+        where: { eventId, status: TicketStatus.AVAILABLE, name: selection.ticketName },
+        orderBy: { id: "asc" },
+        take: selection.quantity,
+      });
+      candidates.push(...tickets);
+    }
     if (candidates.length !== quantity)
       throw new BadRequestException("Tickets are no longer available");
 
@@ -50,13 +60,7 @@ export class BookingService {
       }
       const expiresAt = new Date(Date.now() + this.redis.lockSeconds * 1000);
       const booking = await this.prisma.$transaction(async (tx) => {
-        const locked = await tx.ticket.updateMany({
-          where: { id: { in: acquired }, status: TicketStatus.AVAILABLE },
-          data: { status: TicketStatus.LOCKED, bookingId },
-        });
-        if (locked.count !== acquired.length)
-          throw new BadRequestException("Ticket availability changed");
-        return tx.booking.create({
+        const createdBooking = await tx.booking.create({
           data: {
             id: bookingId,
             userId,
@@ -66,10 +70,19 @@ export class BookingService {
               (total, ticket) => total.add(ticket.price),
               new Prisma.Decimal(0),
             ),
-            ...buyer,
+            buyerName: buyer.buyerName,
+            buyerAddress: buyer.buyerAddress,
+            buyerPhone: buyer.buyerPhone,
             expiresAt,
           },
         });
+        const locked = await tx.ticket.updateMany({
+          where: { id: { in: acquired }, status: TicketStatus.AVAILABLE },
+          data: { status: TicketStatus.LOCKED, bookingId },
+        });
+        if (locked.count !== acquired.length)
+          throw new BadRequestException("Ticket availability changed");
+        return createdBooking;
       });
       return { bookingId: booking.id, expiresAt, ticketIds: acquired };
     } catch (error) {
@@ -105,6 +118,20 @@ export class BookingService {
         where: { id: bookingId },
         data: { status: BookingStatus.CONFIRMED },
       });
+      await tx.payment.upsert({
+        where: { bookingId },
+        create: {
+          bookingId,
+          amount: booking.totalAmount,
+          provider: booking.totalAmount.equals(0) ? "free" : "dummy",
+          status: "SUCCESS",
+          paidAt: new Date(),
+        },
+        update: {
+          status: "SUCCESS",
+          paidAt: new Date(),
+        },
+      });
     });
     await Promise.all(
       booking.tickets.map((ticket) =>
@@ -115,6 +142,16 @@ export class BookingService {
       where: { id: bookingId },
       include: { tickets: true, payment: true },
     });
+  }
+
+  async completeBooking(
+    eventId: string,
+    userId: string,
+    quantity: number,
+    buyer: { buyerName: string; buyerAddress: string; buyerPhone: string; ticketName: string; ticketSelections?: { ticketName: string; quantity: number }[] },
+  ) {
+    const pending = await this.createBooking(eventId, userId, quantity, buyer);
+    return this.confirm(pending.bookingId, userId);
   }
 
   async expire(bookingId: string, user: AuthUser) {
@@ -195,7 +232,15 @@ export class BookingService {
   async getForUser(id: string, userId: string) {
     const booking = await this.prisma.booking.findFirst({
       where: { id, userId },
-      include: { event: true, tickets: true, payment: true },
+      include: {
+        event: {
+          include: {
+            seller: { select: { id: true, name: true, image: true } },
+          },
+        },
+        tickets: true,
+        payment: true,
+      },
     });
     if (!booking) throw new NotFoundException("Booking not found");
     return booking;

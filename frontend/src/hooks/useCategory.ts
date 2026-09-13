@@ -41,8 +41,8 @@ export function useCreateCategory(): UseMutationResult<
   return useMutation({
     mutationFn: categoryService.create,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryKeys.list() });
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
       queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });
@@ -55,9 +55,9 @@ export function useUpdateCategory(
   return useMutation({
     mutationFn: (payload) => categoryService.update(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: categoryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all });
       queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
       queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });
@@ -72,9 +72,9 @@ export function useDeleteCategory(): UseMutationResult<
   return useMutation({
     mutationFn: (id) => categoryService.delete(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: categoryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: categoryKeys.all });
       queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.all });
       queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });

@@ -32,7 +32,7 @@ export default function AdminEventTicketsPage() {
     { accessorKey: "status", header: "Status", cell: ({ row }) => <Badge>{row.original.status}</Badge> },
     { id: "actions", header: "Actions", cell: ({ row }) => row.original.status !== "SOLD" && row.original.status !== "LOCKED" ? <Button variant="ghost" onClick={() => setDeletingTicketId(row.original.id)}>Delete</Button> : null },
   ];
-  const handleCreate = (form: TicketFormInput) => createTickets.mutate(form, { onSuccess: () => setTicketDialogOpen(false) });
+  const handleCreate = (form: TicketFormInput) => createTickets.mutate({ ...form, description: form.description ?? "" }, { onSuccess: () => setTicketDialogOpen(false) });
   const handleDelete = () => {
     if (!deletingTicketId) return;
     deleteTicket.mutate(deletingTicketId, { onSuccess: () => setDeletingTicketId(null) });

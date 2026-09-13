@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import Link from "next/link";
 
 export default function HeroBanner() {
   const [date, setDate] = useState<Date | undefined>();
@@ -52,9 +53,11 @@ export default function HeroBanner() {
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
             </button>
 
+            <Link href="/seller/terms" >
             <button className="inline-flex items-center justify-center px-6 py-3.5 rounded-2xl bg-[#2e335b]/50 hover:bg-[#2e335b]/80 text-white font-medium text-sm sm:text-base border border-white/10 backdrop-blur-md active:scale-[0.98] transition-all">
-              Become a Vendor
-            </button>
+            Become An Organizer</button>
+              
+            </Link>
           </div>
         </div>
 

@@ -28,7 +28,7 @@ export class MailService {
       from: process.env.MAIL_FROM ?? "no-reply@evently.local",
       to: email,
       subject: "Verify your Bengal Booking email",
-      text: `Verify your email: ${url}`,
+      text: `Your Bengal Booking verification OTP is ${token}. You can also verify here: ${url}`,
     });
   }
 }

@@ -16,6 +16,7 @@ import type {
   RegisterPayload,
   RegisterResponse,
   VerifyEmailResponse,
+  BecomeSellerResponse,
 } from "@/types/auth.types";
 
 export const authKeys = {
@@ -49,8 +50,14 @@ export function useRegister(): UseMutationResult<
   ApiError,
   RegisterPayload
 > {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: authService.register,
+    onSuccess: async () => {
+      const currentUser = await authService.getMe();
+      authStore.setUser(currentUser);
+      queryClient.setQueryData(authKeys.me(), currentUser);
+    },
   });
 }
 
@@ -86,7 +93,37 @@ export function useVerifyEmail(): UseMutationResult<
   ApiError,
   string
 > {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (token: string) => authService.verifyEmail(token),
+    onSuccess: async () => {
+      const currentUser = await authService.getMe();
+      authStore.setUser(currentUser);
+      queryClient.setQueryData(authKeys.me(), currentUser);
+    },
+  });
+}
+
+export function useResendVerification(): UseMutationResult<
+  VerifyEmailResponse,
+  ApiError,
+  void
+> {
+  return useMutation({ mutationFn: authService.resendVerification });
+}
+
+export function useBecomeSeller(): UseMutationResult<
+  BecomeSellerResponse,
+  ApiError,
+  void
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: authService.becomeSeller,
+    onSuccess: async () => {
+      const currentUser = await authService.getMe();
+      authStore.setUser(currentUser);
+      queryClient.setQueryData(authKeys.me(), currentUser);
+    },
   });
 }
