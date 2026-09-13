@@ -6,9 +6,10 @@ import { ArrowUpDown } from "lucide-react";
 import DataTable from "@/components/data-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useSellerEventList } from "@/hooks/useSellerEvent";
 import { useSellerEventBookings } from "@/hooks/useSellerBooking";
+import { useBookingList } from "@/hooks/useBooking";
 import type { Booking } from "@/types/booking.types";
 import type { PaginationParams } from "@/components/data-table";
 
@@ -21,12 +22,19 @@ export default function SellerBookingsPage() {
 
   const { data: eventResult } = useSellerEventList();
   const events = eventResult?.data ?? [];
-  const { data: bookingResult } = useSellerEventBookings(selectedEventId || "", pagination);
+  const { data: allBookingResult, isLoading: allBookingsLoading } =
+    useBookingList(selectedEventId ? undefined : {
+      page: pagination.page,
+      limit: pagination.pageSize,
+    });
+  const { data: eventBookingResult, isLoading: eventBookingsLoading } =
+    useSellerEventBookings(selectedEventId || "", pagination);
+  const bookingResult = selectedEventId ? eventBookingResult : allBookingResult;
   const bookings = bookingResult?.data ?? [];
 
   const columns: ColumnDef<Booking>[] = [
     {
-      accessorKey: "user.name",
+      accessorKey: "buyerName",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -40,17 +48,33 @@ export default function SellerBookingsPage() {
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <Avatar className="w-8 h-8">
-            <AvatarImage src={row.original.user?.image ?? undefined} />
-            <AvatarFallback>
-              {row.original.user?.name?.charAt(0).toUpperCase()}
-            </AvatarFallback>
+            <AvatarFallback>{row.original.buyerName?.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>
-            <p className="font-medium text-sm">{row.original.user?.name}</p>
-            <p className="text-xs text-gray-500">{row.original.user?.email}</p>
+            <p className="font-medium text-sm">{row.original.buyerName}</p>
+            <p className="text-xs text-gray-500">{row.original.buyerPhone}</p>
           </div>
         </div>
       ),
+    },
+    {
+      accessorKey: "buyerAddress",
+      header: "Address",
+      cell: ({ row }) => (
+        <span className="max-w-48 truncate" title={row.original.buyerAddress}>
+          {row.original.buyerAddress}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "buyerPhone",
+      header: "Phone",
+    },
+    {
+      id: "tickets",
+      header: "Tickets",
+      cell: ({ row }) =>
+        row.original.tickets?.map((ticket) => ticket.name).join(", ") || "-",
     },
     {
       accessorKey: "quantity",
@@ -124,7 +148,7 @@ export default function SellerBookingsPage() {
 
       <DataTable
         columns={columns}
-        data={selectedEventId ? bookings : bookings}
+        data={bookings}
         totalCount={bookingResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
@@ -134,7 +158,7 @@ export default function SellerBookingsPage() {
         showSearch
         enableColumnVisibility
         enablePagination
-        loading={false}
+        loading={selectedEventId ? eventBookingsLoading : allBookingsLoading}
         emptyMessage={
           selectedEventId ? "No bookings for this event" : "No bookings found"
         }

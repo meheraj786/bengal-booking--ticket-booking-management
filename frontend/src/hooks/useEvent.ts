@@ -43,6 +43,15 @@ export function useEvent(id: string): UseQueryResult<Event, ApiError> {
   });
 }
 
+export function useEventBySlug(slug: string): UseQueryResult<Event, ApiError> {
+  return useQuery({
+    queryKey: [...eventKeys.all, "slug", slug],
+    queryFn: () => eventService.getBySlug(slug),
+    enabled: Boolean(slug),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useEventFilters(): UseQueryResult<
   EventFiltersResponse,
   ApiError

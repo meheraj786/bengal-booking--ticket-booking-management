@@ -10,6 +10,8 @@ import { PrismaService } from "../infrastructure/prisma.service";
 import { AuthUser } from "../common/auth-user";
 import { CreateEventDto, UpdateEventDto } from "./event.dto";
 import { getPagination, paginated } from "../common/pagination";
+import { slugify } from "../common/slugify";
+import { randomUUID } from "node:crypto";
 
 @Injectable()
 export class EventService {
@@ -23,6 +25,9 @@ export class EventService {
       search?: string;
       startDate?: string;
       endDate?: string;
+      minPrice?: string;
+      maxPrice?: string;
+      sort?: string;
       page?: string;
       limit?: string;
     } = {},
@@ -30,9 +35,13 @@ export class EventService {
     const { page, limit, skip } = getPagination(filters);
     const startDate = this.parseDate(filters.startDate, "startDate");
     const endDate = this.parseDate(filters.endDate, "endDate", true);
+    const minPrice = this.parsePrice(filters.minPrice, "minPrice");
+    const maxPrice = this.parsePrice(filters.maxPrice, "maxPrice");
 
     if (startDate && endDate && startDate > endDate)
       throw new BadRequestException("startDate cannot be after endDate");
+    if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice)
+      throw new BadRequestException("minPrice cannot be greater than maxPrice");
 
     const where: Prisma.EventWhereInput = {
         status: EventStatus.PUBLISHED,
@@ -50,6 +59,18 @@ export class EventService {
           gte: startDate,
           lte: endDate,
         },
+        tickets:
+          minPrice !== undefined || maxPrice !== undefined
+            ? {
+                some: {
+                  status: { in: ["AVAILABLE", "LOCKED"] },
+                  price: {
+                    gte: minPrice,
+                    lte: maxPrice,
+                  },
+                },
+              }
+            : undefined,
         OR: filters.search
           ? [
               { title: { contains: filters.search, mode: "insensitive" } },
@@ -60,16 +81,33 @@ export class EventService {
             ]
           : undefined,
     };
-    const [data, total] = await this.prisma.$transaction([
-      this.prisma.event.findMany({ where, skip, take: limit, include: {
+    const events = await this.prisma.event.findMany({ where, include: {
         category: true,
         area: true,
         seller: { select: { id: true, name: true, image: true } },
         _count: { select: { bookings: true } },
-      }, orderBy: { startAt: "asc" } }),
-      this.prisma.event.count({ where }),
-    ]);
+        tickets: { select: { price: true, status: true } },
+      }, orderBy: { startAt: "asc" } });
+    const total = events.length;
+    const sorted = [...events].sort((a, b) => {
+      if (filters.sort === "popularity") {
+        return b._count.bookings - a._count.bookings ||
+          a.startAt.getTime() - b.startAt.getTime();
+      }
+      if (filters.sort === "price-low") {
+        return this.lowestTicketPrice(a.tickets) - this.lowestTicketPrice(b.tickets);
+      }
+      return a.startAt.getTime() - b.startAt.getTime();
+    });
+    const data = sorted.slice(skip, skip + limit).map(({ tickets: _tickets, ...event }) => event);
     return paginated(data, total, page, limit);
+  }
+
+  private lowestTicketPrice(tickets: Array<{ price: Prisma.Decimal; status: string }>) {
+    const available = tickets
+      .filter((ticket) => ticket.status === "AVAILABLE" || ticket.status === "LOCKED")
+      .map((ticket) => Number(ticket.price));
+    return available.length ? Math.min(...available) : Number.POSITIVE_INFINITY;
   }
 
   private parseDate(value: string | undefined, name: string, endOfDay = false) {
@@ -80,6 +118,14 @@ export class EventService {
     if (endOfDay && /^\d{4}-\d{2}-\d{2}$/.test(value))
       date.setUTCHours(23, 59, 59, 999);
     return date;
+  }
+
+  private parsePrice(value: string | undefined, name: string) {
+    if (value === undefined) return undefined;
+    const price = Number(value);
+    if (!Number.isFinite(price) || price < 0)
+      throw new BadRequestException(`${name} must be a non-negative number`);
+    return price;
   }
 
   categories() {
@@ -108,6 +154,24 @@ export class EventService {
     return event;
   }
 
+  async getBySlug(slug: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { slug },
+      include: {
+        category: true,
+        area: true,
+        seller: { select: { id: true, name: true, image: true } },
+        _count: { select: { tickets: true, bookings: true } },
+        tickets: {
+          select: { id: true, name: true, description: true, price: true, status: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+    if (!event) throw new NotFoundException("Event not found");
+    return event;
+  }
+
   async getSellerEvent(id: string, user: AuthUser) {
     const event = await this.get(id);
     if (user.role !== "SUPER_ADMIN" && event.sellerId !== user.id)
@@ -119,6 +183,7 @@ export class EventService {
     return this.prisma.event.create({
       data: {
         ...dto,
+        slug: `${slugify(dto.title)}-${randomUUID().slice(0, 8)}`,
         sellerId: user.id,
         startAt: new Date(dto.startAt),
         endAt: new Date(dto.endAt),

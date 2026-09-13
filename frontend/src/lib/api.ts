@@ -8,6 +8,7 @@ export const api = axios.create({
 
 export type EventSummary = {
   id: string;
+  slug: string;
   title: string;
   description: string;
   venueName: string;

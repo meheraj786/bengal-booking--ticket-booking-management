@@ -4,7 +4,7 @@ export const WISHLIST_STORAGE_KEY = "bengal-booking-wishlist";
 
 export type WishlistEvent = Pick<
   Event,
-  "id" | "title" | "coverImage" | "startAt" | "venueName" | "venueAddress" | "paymentType"
+  "id" | "slug" | "title" | "coverImage" | "startAt" | "venueName" | "venueAddress" | "paymentType"
 > & {
   areaName?: string;
 };
@@ -28,6 +28,7 @@ export function toggleWishlist(event: Event): WishlistEvent[] {
         ...wishlist,
         {
           id: event.id,
+          slug: event.slug,
           title: event.title,
           coverImage: event.coverImage,
           startAt: event.startAt,

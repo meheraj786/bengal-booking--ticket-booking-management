@@ -19,7 +19,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { useEvent } from "@/hooks/useEvent";
+import { useEventBySlug } from "@/hooks/useEvent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,10 +31,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
 export default function EventDetailsPage() {
-  const eventId = useParams<{ id: string }>()?.id as string;
+  const eventSlug = useParams<{ slug: string }>()?.slug as string;
   const router = useRouter();
   const { user } = useAuthStore();
-  const { data: event, isLoading, error } = useEvent(eventId);
+  const { data: event, isLoading, error } = useEventBySlug(eventSlug);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState({ buyerName: "", buyerAddress: "", buyerPhone: "" });
 
@@ -129,7 +129,7 @@ export default function EventDetailsPage() {
       quantity: quantities[ticket.id],
     }));
     sessionStorage.setItem(
-      `checkout:${event.id}`,
+      `checkout:${event.slug}`,
       JSON.stringify({
         eventId: event.id,
         quantity: totalQuantity,
@@ -138,7 +138,7 @@ export default function EventDetailsPage() {
         ...buyer,
       }),
     );
-    router.push(`/events/${event.id}/checkout`);
+    router.push(`/events/${event.slug}/checkout`);
   };
 
   const isFormValid =

@@ -2,6 +2,8 @@ import {
   createContext,
   useContext,
   useState,
+  useEffect,
+  useRef,
   type ReactNode,
   type ButtonHTMLAttributes,
   type HTMLAttributes,
@@ -12,9 +14,18 @@ const MenuContext = createContext<{
 }>({ open: false, setOpen: () => undefined });
 export function DropdownMenu({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
+  }, [open]);
   return (
     <MenuContext.Provider value={{ open, setOpen }}>
-      <div className="relative inline-block">{children}</div>
+      <div ref={menuRef} className="relative inline-block">{children}</div>
     </MenuContext.Provider>
   );
 }
@@ -25,11 +36,11 @@ export function DropdownMenuTrigger({
   children: ReactNode;
   asChild?: boolean;
 }) {
-  const { setOpen } = useContext(MenuContext);
+  const { open, setOpen } = useContext(MenuContext);
   if (asChild && typeof children === "object" && children !== null)
-    return <span onClick={() => setOpen(true)}>{children}</span>;
+    return <span onClick={() => setOpen(!open)}>{children}</span>;
   return (
-    <button type="button" onClick={() => setOpen(true)}>
+    <button type="button" onClick={() => setOpen(!open)}>
       {children}
     </button>
   );
@@ -64,12 +75,20 @@ export function DropdownMenuItem({
 }) {
   const className = `flex w-full items-center rounded px-2 py-1.5 text-left text-sm hover:bg-muted ${props.className ?? ""}`;
 
+  const { setOpen } = useContext(MenuContext);
   if (asChild) {
-    return <span className={className}>{children}</span>;
+    return (
+      <span className={className} onClick={() => setOpen(false)}>
+        {children}
+      </span>
+    );
   }
 
   return (
-    <button {...props} type="button" className={className} onClick={onClick}>
+    <button {...props} type="button" className={className} onClick={(event) => {
+      setOpen(false);
+      onClick?.(event);
+    }}>
       {children}
     </button>
   );

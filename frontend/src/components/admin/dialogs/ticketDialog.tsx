@@ -30,6 +30,7 @@ interface TicketDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: TicketFormInput) => void;
   eventTitle?: string;
+  paymentType?: "Advance" | "OnArrival" | "Free";
   isLoading?: boolean;
 }
 
@@ -38,8 +39,10 @@ export function TicketDialog({
   onOpenChange,
   onSubmit,
   eventTitle,
+  paymentType,
   isLoading,
 }: TicketDialogProps) {
+  const isFreeEvent = paymentType === "Free";
   const form = useForm<TicketFormInput>({
     resolver: zodResolver(ticketFormSchema),
     defaultValues: {
@@ -60,7 +63,7 @@ export function TicketDialog({
   }, [form, open]);
 
   const handleFormSubmit = form.handleSubmit((data) => {
-    onSubmit(data);
+    onSubmit({ ...data, price: isFreeEvent ? 0 : data.price });
   });
 
   return (
@@ -141,30 +144,32 @@ export function TicketDialog({
                     aria-invalid={fieldState.invalid}
                   />
 
-                  <Controller
-                    name="price"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="ticket-price">Price</FieldLabel>
-                        <Input
-                          {...field}
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          id="ticket-price"
-                          placeholder="0.00"
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                          disabled={isLoading}
-                          aria-invalid={fieldState.invalid}
-                        />
-                        <FieldDescription>Price per ticket</FieldDescription>
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
+                  {!isFreeEvent && (
+                    <Controller
+                      name="price"
+                      control={form.control}
+                      render={({ field, fieldState }) => (
+                        <Field data-invalid={fieldState.invalid}>
+                          <FieldLabel htmlFor="ticket-price">Price</FieldLabel>
+                          <Input
+                            {...field}
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            id="ticket-price"
+                            placeholder="0.00"
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                            disabled={isLoading}
+                            aria-invalid={fieldState.invalid}
+                          />
+                          <FieldDescription>Price per ticket</FieldDescription>
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
+                  )}
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

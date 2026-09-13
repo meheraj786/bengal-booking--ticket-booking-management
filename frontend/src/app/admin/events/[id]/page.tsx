@@ -44,7 +44,7 @@ export default function AdminEventTicketsPage() {
         <Button onClick={() => setTicketDialogOpen(true)}>Add Tickets</Button>
       </div>
       <DataTable columns={columns} data={data?.data ?? []} totalCount={data?.pagination.total ?? 0} currentPage={pagination.page} pageSize={pagination.pageSize} onPaginationChange={setPagination} title="Tickets" enablePagination loading={isLoading} emptyMessage="No tickets found" />
-      <TicketDialog open={ticketDialogOpen} onOpenChange={setTicketDialogOpen} onSubmit={handleCreate} eventTitle={event?.title} isLoading={createTickets.isPending} />
+      <TicketDialog open={ticketDialogOpen} onOpenChange={setTicketDialogOpen} onSubmit={handleCreate} eventTitle={event?.title} paymentType={event?.paymentType} isLoading={createTickets.isPending} />
       <DeleteDialog open={!!deletingTicketId} onOpenChange={(open) => !open && setDeletingTicketId(null)} onConfirm={handleDelete} title="Delete ticket" description="This ticket will be removed from the event." isLoading={deleteTicket.isPending} />
     </div>
   );

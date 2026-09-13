@@ -297,6 +297,7 @@ export default function SellerEventDetailPage() {
           });
         }}
         eventTitle={event.title}
+        paymentType={event.paymentType}
         isLoading={createTickets.isPending}
       />
 

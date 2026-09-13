@@ -80,7 +80,7 @@ export default function CategorySection() {
         </div>
 
         <Link
-          href="/explore"
+          href="/categories"
           className="group inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
         >
           <span>View all</span>

@@ -244,6 +244,7 @@ export default function SellerEventsPage() {
         onOpenChange={(open) => !open && setTicketEvent(null)}
         onSubmit={handleAddTickets}
         eventTitle={ticketEvent?.title}
+        paymentType={ticketEvent?.paymentType}
         isLoading={createTickets.isPending}
       />
 

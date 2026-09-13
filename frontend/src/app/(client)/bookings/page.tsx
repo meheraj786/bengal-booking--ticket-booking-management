@@ -241,7 +241,7 @@ export default function BookingsPage() {
 
             <div className="min-w-0 flex-1">
               <Link
-                href={`/events/${booking.eventId}`}
+                href={`/events/${booking.event?.slug ?? booking.eventId}`}
                 className="inline-block max-w-full truncate align-top font-semibold hover:underline focus:outline-none"
                 onClick={(e) => e.stopPropagation()}
               >

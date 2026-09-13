@@ -30,6 +30,9 @@ export class EventController {
     @Query("search") search?: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
+    @Query("minPrice") minPrice?: string,
+    @Query("maxPrice") maxPrice?: string,
+    @Query("sort") sort?: string,
     @Query("page") page?: string,
     @Query("limit") limit?: string,
   ) {
@@ -40,6 +43,9 @@ export class EventController {
       search,
       startDate,
       endDate,
+      minPrice,
+      maxPrice,
+      sort,
       page,
       limit,
     });
@@ -53,6 +59,11 @@ export class EventController {
   @Get("filters/areas")
   areas() {
     return this.service.areas();
+  }
+
+  @Get("slug/:slug")
+  getBySlug(@Param("slug") slug: string) {
+    return this.service.getBySlug(slug);
   }
 
   @Get("seller/mine")

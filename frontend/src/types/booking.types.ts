@@ -16,6 +16,7 @@ export interface Ticket {
 
 export interface BookingEvent {
   id: string;
+  slug: string;
   title: string;
   venueName: string;
   startAt: string;

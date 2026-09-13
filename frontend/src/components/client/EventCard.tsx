@@ -36,7 +36,7 @@ export function EventCard({ event }: { event: Event }) {
   if (isFree) {
     return (
       <Link
-        href={`/events/${event.id}`}
+        href={`/events/${event.slug}`}
         className="group relative flex w-full overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
       >
         <div className="relative w-[48%] min-h-[190px] overflow-hidden">
@@ -89,7 +89,7 @@ export function EventCard({ event }: { event: Event }) {
 
   return (
     <Link
-      href={`/events/${event.id}`}
+      href={`/events/${event.slug}`}
       className="group relative flex w-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)]"
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden">

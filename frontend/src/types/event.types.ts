@@ -7,6 +7,7 @@ export interface Event {
   categoryId: string;
   areaId: string;
   title: string;
+  slug: string;
   description: string;
   venueName: string;
   venueAddress: string;
@@ -51,6 +52,7 @@ export interface EventListFilters extends PaginationParams {
   maxPrice?: string;
   startDate?: string;
   endDate?: string;
+  sort?: "popularity" | "soonest" | "price-low";
 }
 
 export interface CreateEventPayload {

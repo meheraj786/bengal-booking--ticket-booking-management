@@ -22,6 +22,11 @@ export const eventService = {
     return data;
   },
 
+  getBySlug: async (slug: string): Promise<Event> => {
+    const { data } = await apiClient.get<Event>(`/events/slug/${slug}`);
+    return data;
+  },
+
   getFilters: async (): Promise<EventFiltersResponse> => {
     const categories = await eventService.getCategories();
     const areas = await eventService.getAreas();

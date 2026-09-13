@@ -65,6 +65,7 @@ model Event {
   categoryId              String
   areaId                  String
   title                   String
+  slug                    String      @unique
   description             String
   venueName               String
   venueAddress            String

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAuthStore } from "@/hooks/useAuthStore";
-import { useEvent } from "@/hooks/useEvent";
+import { useEventBySlug } from "@/hooks/useEvent";
 import { useCheckoutBooking } from "@/hooks/useBooking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,18 +21,18 @@ type CheckoutData = {
 };
 
 export default function CheckoutPage() {
-  const eventId = useParams<{ id: string }>()?.id as string;
+  const eventSlug = useParams<{ slug: string }>()?.slug as string;
   const router = useRouter();
   const { user } = useAuthStore();
-  const { data: event, isLoading } = useEvent(eventId);
+  const { data: event, isLoading } = useEventBySlug(eventSlug);
   const complete = useCheckoutBooking();
   const [data, setData] = useState<CheckoutData | null>(null);
   const [card, setCard] = useState({ name: "", number: "", expiry: "", cvv: "" });
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(`checkout:${eventId}`);
+    const stored = sessionStorage.getItem(`checkout:${eventSlug}`);
     if (stored) setData(JSON.parse(stored) as CheckoutData);
-  }, [eventId]);
+  }, [eventSlug]);
 
   if (isLoading || !data) return <main className="mx-auto max-w-3xl p-8 text-center">Loading checkout...</main>;
   const amount = (data.ticketSelections ?? [{ ticketName: data.ticketName, quantity: data.quantity }]).reduce(
@@ -50,7 +50,7 @@ export default function CheckoutPage() {
     if (!canSubmit || !user?.isVerified) return;
     complete.mutate(data, {
       onSuccess: (booking) => {
-        sessionStorage.removeItem(`checkout:${eventId}`);
+        sessionStorage.removeItem(`checkout:${eventSlug}`);
         router.push(`/bookings/${booking.id}`);
       },
     });
@@ -95,7 +95,7 @@ export default function CheckoutPage() {
                   ? "Pay and complete booking"
                   : "Complete booking"}
             </Button>
-            <Link className="block text-center text-sm underline" href={`/events/${eventId}`}>Back to event</Link>
+            <Link className="block text-center text-sm underline" href={`/events/${eventSlug}`}>Back to event</Link>
           </CardContent>
         </Card>
         <Card className="h-fit"><CardHeader><CardTitle>Order summary</CardTitle></CardHeader><CardContent className="space-y-2">

@@ -69,7 +69,7 @@ export default function WishlistPage() {
                   </button>
                 </div>
                 <CardContent className="space-y-2 p-4">
-                  <Link href={`/events/${event.id}`} className="font-semibold hover:text-primary">{event.title}</Link>
+                  <Link href={`/events/${event.slug ?? event.id}`} className="font-semibold hover:text-primary">{event.title}</Link>
                   <p className="text-xs text-primary">{new Date(event.startAt).toLocaleString()}</p>
                   <p className="flex items-center gap-1 text-xs text-slate-500"><MapPin className="h-3.5 w-3.5" />{event.venueName}, {event.areaName ?? event.venueAddress}</p>
                   <p className="text-sm font-semibold">{event.paymentType}</p>

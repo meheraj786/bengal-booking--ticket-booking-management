@@ -126,7 +126,7 @@ export default function Navbar() {
 
                   <DropdownMenuContent
                     align="end"
-                    className="w-56 bg-[#141638] border-white/10 !text-slate-200 shadow-2xl rounded-2xl p-1.5"
+                    className="w-56 !bg-[#141638] !border-white/10 !text-slate-200 shadow-2xl rounded-2xl p-1.5"
                   >
                     <div className="px-3 py-2">
                       <p className="text-sm font-semibold !text-white">
