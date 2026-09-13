@@ -1,6 +1,7 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { CategoryDto } from "./category.dto";
+import { paginated } from "../common/pagination";
 
 interface CategoryFilters {
   limit?: string | number;
@@ -36,10 +37,14 @@ export class CategoryService {
       orderBy: { name: "asc" },
     });
 
-    return categories.map(({ _count, ...category }) => ({
+    const data = categories.map(({ _count, ...category }) => ({
       ...category,
       eventCount: _count.events,
     }));
+    const total = await this.prisma.category.count({ where: search ? {
+      name: { contains: search, mode: "insensitive" },
+    } : undefined });
+    return paginated(data, total, page, limit);
   }
 
   create(dto: CategoryDto) {

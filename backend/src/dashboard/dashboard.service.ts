@@ -26,10 +26,9 @@ export class DashboardService {
         publishedEvents: events.filter(
           (event) => event.status === EventStatus.PUBLISHED,
         ).length,
-        ticketsSold: events.reduce(
-          (total, event) => total + event.soldTickets,
-          0,
-        ),
+        ticketsSold: bookings
+          .filter((booking) => booking.status === BookingStatus.CONFIRMED)
+          .reduce((total, booking) => total + booking.quantity, 0),
         grossRevenue: bookings
           .filter((booking) => booking.status === BookingStatus.CONFIRMED)
           .reduce((total, booking) => total + Number(booking.totalAmount), 0),

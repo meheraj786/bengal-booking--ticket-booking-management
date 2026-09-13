@@ -29,6 +29,7 @@ model Division {
   id        String   @id @default(uuid())
   name      String   @unique
   slug      String   @unique
+  image     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   areas     Area[]
@@ -51,6 +52,7 @@ model Category {
   id          String   @id @default(uuid())
   name        String   @unique
   slug        String   @unique
+  image       String?
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -68,10 +70,10 @@ model Event {
   venueAddress         String
   startAt              DateTime
   endAt                DateTime
-  price                Decimal     @db.Decimal(12, 2)
-  totalTickets         Int
-  soldTickets          Int         @default(0)
   maxTicketsPerBooking Int         @default(5)
+  lastDateAndTimeOfCancel DateTime?
+  lastDateOfBooking       DateTime?
+  paymentType             PaymentType @default(Free)
   status               EventStatus @default(DRAFT)
   coverImage           String?
   createdAt            DateTime    @default(now())
@@ -88,7 +90,6 @@ model Event {
 model Ticket {
   id           String       @id @default(uuid())
   eventId      String
-  ticketNumber Int
   status       TicketStatus @default(AVAILABLE)
   bookingId    String?
   createdAt    DateTime     @default(now())
@@ -97,7 +98,6 @@ model Ticket {
   event        Event        @relation(fields: [eventId], references: [id])
   booking      Booking?     @relation(fields: [bookingId], references: [id])
 
-  @@unique([eventId, ticketNumber])
   @@index([eventId, status])
 }
 
@@ -107,6 +107,9 @@ model Booking {
   eventId     String
   quantity    Int
   totalAmount Decimal       @db.Decimal(12, 2)
+  buyerName   String
+  buyerAddress String
+  buyerPhone  String
   status      BookingStatus @default(PENDING)
   expiresAt   DateTime?
   createdAt   DateTime      @default(now())
@@ -169,4 +172,10 @@ enum EventStatus {
   PUBLISHED
   CANCELLED
   COMPLETED
+}
+
+enum PaymentType {
+  Advance
+  OnArrival
+  Free
 }

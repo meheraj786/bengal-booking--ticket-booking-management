@@ -1,30 +1,44 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { AreaDto, UpdateAreaDto } from "./area.dto";
+import { getPagination, paginated } from "../common/pagination";
 
 @Injectable()
 export class AreaService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  list() {
-    return this.prisma.area.findMany({
+  async list(query: { page?: string; limit?: string } = {}) {
+    const { page, limit, skip } = getPagination(query);
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.area.findMany({
+      skip, take: limit,
       include: {
         division: true,
         _count: { select: { events: true } },
       },
       orderBy: { name: "asc" },
-    });
+      }),
+      this.prisma.area.count(),
+    ]);
+    return paginated(data, total, page, limit);
   }
 
-  async listByDivision(divisionId: string) {
-    return this.prisma.area.findMany({
+  async listByDivision(divisionId: string, query: { page?: string; limit?: string } = {}) {
+    const { page, limit, skip } = getPagination(query);
+    const where = { divisionId };
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.area.findMany({
       where: { divisionId },
+      skip, take: limit,
       include: {
         division: true,
         _count: { select: { events: true } },
       },
       orderBy: { name: "asc" },
-    });
+      }),
+      this.prisma.area.count({ where }),
+    ]);
+    return paginated(data, total, page, limit);
   }
 
   create(dto: AreaDto) {

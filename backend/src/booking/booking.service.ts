@@ -9,6 +9,7 @@ import { BookingStatus, Prisma, TicketStatus } from "@prisma/client";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { RedisService } from "../infrastructure/redis.service";
 import { AuthUser } from "../common/auth-user";
+import { getPagination, paginated } from "../common/pagination";
 
 @Injectable()
 export class BookingService {
@@ -17,7 +18,12 @@ export class BookingService {
     @Inject(RedisService) private readonly redis: RedisService,
   ) {}
 
-  async createBooking(eventId: string, userId: string, quantity: number) {
+  async createBooking(
+    eventId: string,
+    userId: string,
+    quantity: number,
+    buyer: { buyerName: string; buyerAddress: string; buyerPhone: string },
+  ) {
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
     });
@@ -26,13 +32,9 @@ export class BookingService {
     if (quantity < 1 || quantity > event.maxTicketsPerBooking)
       throw new BadRequestException("Invalid quantity");
 
-    const availableTickets = event.totalTickets - event.soldTickets;
-    if (quantity > availableTickets)
-      throw new BadRequestException("Not enough tickets available");
-
     const candidates = await this.prisma.ticket.findMany({
       where: { eventId, status: TicketStatus.AVAILABLE },
-      orderBy: { ticketNumber: "asc" },
+      orderBy: { id: "asc" },
       take: quantity,
     });
     if (candidates.length !== quantity)
@@ -60,9 +62,8 @@ export class BookingService {
             userId,
             eventId,
             quantity,
-            totalAmount: new Prisma.Decimal(event.price.toString()).mul(
-              quantity,
-            ),
+            totalAmount: new Prisma.Decimal(0),
+            ...buyer,
             expiresAt,
           },
         });
@@ -100,10 +101,6 @@ export class BookingService {
       await tx.booking.update({
         where: { id: bookingId },
         data: { status: BookingStatus.CONFIRMED },
-      });
-      await tx.event.update({
-        where: { id: booking.eventId },
-        data: { soldTickets: { increment: booking.quantity } },
       });
     });
     await Promise.all(
@@ -150,19 +147,32 @@ export class BookingService {
     return this.prisma.booking.findUnique({ where: { id: bookingId } });
   }
 
-  listForUser(userId: string) {
-    return this.prisma.booking.findMany({
+  async listForUser(userId: string, query: { page?: string; limit?: string } = {}) {
+    const { page, limit, skip } = getPagination(query);
+    const where = { userId };
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.booking.findMany({
       where: { userId },
+      skip, take: limit,
       include: { event: true, tickets: true, payment: true },
       orderBy: { createdAt: "desc" },
-    });
+      }),
+      this.prisma.booking.count({ where }),
+    ]);
+    return paginated(data, total, page, limit);
   }
 
-  listAll() {
-    return this.prisma.booking.findMany({
+  async listAll(query: { page?: string; limit?: string } = {}) {
+    const { page, limit, skip } = getPagination(query);
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.booking.findMany({
+      skip, take: limit,
       include: { event: true, tickets: true, payment: true, user: true },
       orderBy: { createdAt: "desc" },
-    });
+      }),
+      this.prisma.booking.count(),
+    ]);
+    return paginated(data, total, page, limit);
   }
 
   async getForUser(id: string, userId: string) {
@@ -183,14 +193,22 @@ export class BookingService {
     return booking;
   }
 
-  async listForEvent(eventId: string) {
-    return this.prisma.booking.findMany({
-      where: { eventId },
-      include: { user: true, tickets: true, payment: true },
-      orderBy: { createdAt: "desc" },
-    });
+  async listForEvent(eventId: string, query: { page?: string; limit?: string } = {}) {
+    const { page, limit, skip } = getPagination(query);
+    const where = { eventId };
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.booking.findMany({
+        where,
+        skip,
+        take: limit,
+        include: { user: true, tickets: true, payment: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.booking.count({ where }),
+    ]);
+    return paginated(data, total, page, limit);
   }
-  async listByEvent(eventId: string, user: AuthUser) {
+  async listByEvent(eventId: string, user: AuthUser, query: { page?: string; limit?: string } = {}) {
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
       select: { sellerId: true },
@@ -199,11 +217,17 @@ export class BookingService {
     if (user.role !== "SUPER_ADMIN" && event.sellerId !== user.id)
       throw new ForbiddenException("You cannot view these bookings");
 
-    return this.prisma.booking.findMany({
-      where: { eventId },
+    const { page, limit, skip } = getPagination(query);
+    const where = { eventId };
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.booking.findMany({
+      where, skip, take: limit,
       include: { user: true, tickets: true, payment: true },
       orderBy: { createdAt: "desc" },
-    });
+      }),
+      this.prisma.booking.count({ where }),
+    ]);
+    return paginated(data, total, page, limit);
   }
   async checkout(bookingId: string, userId: string) {
     const booking = await this.prisma.booking.findFirst({
@@ -212,7 +236,7 @@ export class BookingService {
     });
     if (!booking) throw new NotFoundException("Booking not found");
 
-    if (booking.event.price.equals(0)) {
+    if (booking.event.paymentType === "Free") {
       return this.confirm(bookingId, userId);
     }
 

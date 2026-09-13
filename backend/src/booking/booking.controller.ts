@@ -30,11 +30,15 @@ export class BookingController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.USER, Role.SUPER_ADMIN)
-  list(@CurrentUser() user: AuthUser) {
+  list(
+    @CurrentUser() user: AuthUser,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
     if (user.role === Role.SUPER_ADMIN) {
-      return this.bookings.listAll();
+      return this.bookings.listAll({ page, limit });
     }
-    return this.bookings.listForUser(user.id);
+    return this.bookings.listForUser(user.id, { page, limit });
   }
 
   @Get("event/:eventId")
@@ -43,8 +47,10 @@ export class BookingController {
   listByEvent(
     @Param("eventId") eventId: string,
     @CurrentUser() user: AuthUser,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
   ) {
-    return this.bookings.listByEvent(eventId, user);
+    return this.bookings.listByEvent(eventId, user, { page, limit });
   }
 
   @Get(":bookingId")
@@ -58,7 +64,11 @@ export class BookingController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.USER)
   create(@Body() dto: CreateBookingDto, @CurrentUser() user: AuthUser) {
-    return this.bookings.createBooking(dto.eventId, user.id, dto.quantity);
+    return this.bookings.createBooking(dto.eventId, user.id, dto.quantity, {
+      buyerName: dto.buyerName,
+      buyerAddress: dto.buyerAddress,
+      buyerPhone: dto.buyerPhone,
+    });
   }
 
   @Post(":bookingId/confirm")

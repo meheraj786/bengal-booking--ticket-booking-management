@@ -9,28 +9,35 @@ import { TicketStatus } from "@prisma/client";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { AuthUser } from "../common/auth-user";
 import { CreateTicketDto, UpdateTicketDto } from "./ticket.dto";
+import { getPagination, paginated } from "../common/pagination";
 
 @Injectable()
 export class TicketService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async list(eventId: string) {
+  async list(eventId: string, query: { page?: string; limit?: string } = {}) {
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
     });
     if (!event) throw new NotFoundException("Event not found");
 
-    return this.prisma.ticket.findMany({
+    const { page, limit, skip } = getPagination(query);
+    const where = { eventId };
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.ticket.findMany({
       where: { eventId },
+      skip, take: limit,
       select: {
         id: true,
-        ticketNumber: true,
         status: true,
         note: true,
         createdAt: true,
       },
-      orderBy: { ticketNumber: "asc" },
-    });
+      orderBy: { id: "asc" },
+      }),
+      this.prisma.ticket.count({ where }),
+    ]);
+    return paginated(data, total, page, limit);
   }
 
   async create(eventId: string, dto: CreateTicketDto, user: AuthUser) {
@@ -42,23 +49,18 @@ export class TicketService {
       throw new ForbiddenException("You do not own this event");
 
     return this.prisma.$transaction(async (tx) => {
-      const existing = await tx.ticket.count({ where: { eventId } });
-      if (existing + dto.quantity > event.totalTickets)
-        throw new BadRequestException("Ticket quantity exceeds event capacity");
-
-      const start = existing + 1;
       await tx.ticket.createMany({
         data: Array.from({ length: dto.quantity }, (_, index) => ({
           eventId,
-          ticketNumber: start + index,
           status: TicketStatus.AVAILABLE,
           note: dto.note,
         })),
       });
 
       return tx.ticket.findMany({
-        where: { eventId, ticketNumber: { gte: start } },
-        orderBy: { ticketNumber: "asc" },
+        where: { eventId },
+        orderBy: { createdAt: "desc" },
+        take: dto.quantity,
       });
     });
   }

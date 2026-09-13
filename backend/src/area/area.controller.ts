@@ -22,11 +22,15 @@ export class AreaController {
   constructor(@Inject(AreaService) private readonly service: AreaService) {}
 
   @Get()
-  list(@Query("divisionId") divisionId?: string) {
+  list(
+    @Query("divisionId") divisionId?: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
     if (divisionId) {
-      return this.service.listByDivision(divisionId);
+      return this.service.listByDivision(divisionId, { page, limit });
     }
-    return this.service.list();
+    return this.service.list({ page, limit });
   }
 
   @Post()

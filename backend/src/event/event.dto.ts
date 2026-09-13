@@ -1,12 +1,13 @@
 import {
   IsDateString,
+  IsEnum,
   IsInt,
-  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
   Min,
 } from "class-validator";
+import { PaymentType } from "@prisma/client";
 
 export class CreateEventDto {
   @IsUUID() categoryId!: string;
@@ -17,9 +18,10 @@ export class CreateEventDto {
   @IsString() venueAddress!: string;
   @IsDateString() startAt!: string;
   @IsDateString() endAt!: string;
-  @IsInt() @Min(0) totalTickets!: number;
   @IsInt() @Min(1) maxTicketsPerBooking!: number;
-  @IsNumber() @Min(0) price!: number;
+  @IsDateString() lastDateAndTimeOfCancel!: string;
+  @IsDateString() lastDateOfBooking!: string;
+  @IsEnum(PaymentType) paymentType!: PaymentType;
   @IsOptional() @IsString() coverImage?: string;
 }
 
@@ -32,9 +34,10 @@ export class UpdateEventDto {
   @IsOptional() @IsString() venueAddress?: string;
   @IsOptional() @IsDateString() startAt?: string;
   @IsOptional() @IsDateString() endAt?: string;
-  @IsOptional() @IsInt() @Min(0) totalTickets?: number;
   @IsOptional() @IsInt() @Min(1) maxTicketsPerBooking?: number;
-  @IsOptional() @IsNumber() @Min(0) price?: number;
+  @IsOptional() @IsDateString() lastDateAndTimeOfCancel?: string;
+  @IsOptional() @IsDateString() lastDateOfBooking?: string;
+  @IsOptional() @IsEnum(PaymentType) paymentType?: PaymentType;
   @IsOptional() @IsString() coverImage?: string;
   @IsOptional() @IsString() status?:
     | "DRAFT"

@@ -1,13 +1,17 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { DivisionDto, UpdateDivisionDto } from "./division.dto";
+import { getPagination, paginated } from "../common/pagination";
 
 @Injectable()
 export class DivisionService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  list() {
-    return this.prisma.division.findMany({
+  async list(query: { page?: string; limit?: string } = {}) {
+    const { page, limit, skip } = getPagination(query);
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.division.findMany({
+      skip, take: limit,
       include: {
         areas: {
           include: { division: true },
@@ -15,7 +19,10 @@ export class DivisionService {
         _count: { select: { areas: true } },
       },
       orderBy: { name: "asc" },
-    });
+      }),
+      this.prisma.division.count(),
+    ]);
+    return paginated(data, total, page, limit);
   }
 
   get(id: string) {

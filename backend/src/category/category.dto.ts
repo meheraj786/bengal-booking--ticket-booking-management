@@ -11,4 +11,8 @@ export class CategoryDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
 }

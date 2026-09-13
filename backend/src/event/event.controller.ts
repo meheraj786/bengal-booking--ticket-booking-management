@@ -28,20 +28,20 @@ export class EventController {
     @Query("division") division?: string,
     @Query("area") area?: string,
     @Query("search") search?: string,
-    @Query("minPrice") minPrice?: string,
-    @Query("maxPrice") maxPrice?: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
   ) {
     return this.service.list({
       category,
       division,
       area,
       search,
-      minPrice,
-      maxPrice,
       startDate,
       endDate,
+      page,
+      limit,
     });
   }
 

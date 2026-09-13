@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   UseGuards,
+  Query,
 } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import { JwtAuthGuard } from "../common/jwt-auth.guard";
@@ -23,8 +24,8 @@ export class DivisionController {
   ) {}
 
   @Get()
-  list() {
-    return this.service.list();
+  list(@Query("page") page?: string, @Query("limit") limit?: string) {
+    return this.service.list({ page, limit });
   }
 
   @Get(":id")

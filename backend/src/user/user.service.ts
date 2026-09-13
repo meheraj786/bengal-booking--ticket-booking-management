@@ -6,13 +6,17 @@ import {
 } from "@nestjs/common";
 import { Role, UserStatus } from "@prisma/client";
 import { PrismaService } from "../infrastructure/prisma.service";
+import { getPagination, paginated } from "../common/pagination";
 
 @Injectable()
 export class UserService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  list() {
-    return this.prisma.user.findMany({
+  async list(query: { page?: string; limit?: string } = {}) {
+    const { page, limit, skip } = getPagination(query);
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+      skip, take: limit,
       select: {
         id: true,
         name: true,
@@ -26,7 +30,10 @@ export class UserService {
         updatedAt: true,
       },
       orderBy: { createdAt: "desc" },
-    });
+      }),
+      this.prisma.user.count(),
+    ]);
+    return paginated(data, total, page, limit);
   }
 
   async get(id: string) {

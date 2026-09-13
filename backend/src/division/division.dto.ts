@@ -7,6 +7,10 @@ export class DivisionDto {
 
   @IsString()
   slug!: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
 }
 
 export class UpdateDivisionDto {
@@ -18,4 +22,8 @@ export class UpdateDivisionDto {
   @IsString()
   @IsOptional()
   slug?: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
 }
