@@ -1,14 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { format } from "date-fns";
 import { Heart, MapPin } from "lucide-react";
 import type { Event } from "@/types/event.types";
+import { getWishlist, toggleWishlist } from "@/lib/wishlist";
 
 export function EventCard({ event }: { event: Event }) {
   const [isLiked, setIsLiked] = useState(false);
+  useEffect(() => {
+    const sync = () => setIsLiked(getWishlist().some((item) => item.id === event.id));
+    sync();
+    window.addEventListener("wishlistchange", sync);
+    return () => window.removeEventListener("wishlistchange", sync);
+  }, [event.id]);
 
   const isFree = event.paymentType === "Free";
 
@@ -23,7 +30,7 @@ export function EventCard({ event }: { event: Event }) {
   const handleLikeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsLiked(!isLiked);
+    setIsLiked(toggleWishlist(event).some((item) => item.id === event.id));
   };
 
   if (isFree) {

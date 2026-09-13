@@ -16,11 +16,13 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import Link from "next/link";
+import { useAuthStore } from "@/hooks/useAuthStore";
 
 export default function HeroBanner() {
   const [date, setDate] = useState<Date | undefined>();
   const [location, setLocation] = useState("");
   const [query, setQuery] = useState("");
+  const { user } = useAuthStore();
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 font-sans">
@@ -53,11 +55,11 @@ export default function HeroBanner() {
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
             </button>
 
-            <Link href="/seller/terms" >
+            {(!user || user.role === "USER") && <Link href="/seller/terms" >
             <button className="inline-flex items-center justify-center px-6 py-3.5 rounded-2xl bg-[#2e335b]/50 hover:bg-[#2e335b]/80 text-white font-medium text-sm sm:text-base border border-white/10 backdrop-blur-md active:scale-[0.98] transition-all">
             Become An Organizer</button>
               
-            </Link>
+            </Link>}
           </div>
         </div>
 

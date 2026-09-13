@@ -118,18 +118,23 @@ export class BookingService {
         where: { id: bookingId },
         data: { status: BookingStatus.CONFIRMED },
       });
+      const isOnArrival = booking.event.paymentType === "OnArrival";
       await tx.payment.upsert({
         where: { bookingId },
         create: {
           bookingId,
           amount: booking.totalAmount,
-          provider: booking.totalAmount.equals(0) ? "free" : "dummy",
-          status: "SUCCESS",
-          paidAt: new Date(),
+          provider: isOnArrival
+            ? "on_arrival"
+            : booking.totalAmount.equals(0)
+              ? "free"
+              : "dummy",
+          status: isOnArrival ? "PENDING" : "SUCCESS",
+          paidAt: isOnArrival ? null : new Date(),
         },
         update: {
-          status: "SUCCESS",
-          paidAt: new Date(),
+          status: isOnArrival ? "PENDING" : "SUCCESS",
+          paidAt: isOnArrival ? null : new Date(),
         },
       });
     });

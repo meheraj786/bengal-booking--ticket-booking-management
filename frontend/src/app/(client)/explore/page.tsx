@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEventList, useEventFilters } from "@/hooks/useEvent";
 import { EventCard } from "@/components/client/EventCard";
+import { useAuthStore } from "@/hooks/useAuthStore";
 import type { Event } from "@/types/event.types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
@@ -44,6 +45,7 @@ export default function ExplorePage() {
 }
 
 function ExplorePageContent() {
+  const { user } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const currentPathname = pathname ?? "/explore";
@@ -445,13 +447,13 @@ function ExplorePageContent() {
             </p>
           </div>
 
-          <Link
+          {(!user || user.role === "USER") && <Link
             href="/seller/terms"
             className="inline-flex items-center gap-2 bg-[#ff5d41] hover:bg-[#eb4f34] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm transition-all active:scale-95 self-start sm:self-center"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Sell tickets</span>
-          </Link>
+          </Link>}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">

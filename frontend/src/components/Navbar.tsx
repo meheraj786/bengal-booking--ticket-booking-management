@@ -8,8 +8,6 @@ import {
   Home,
   Search,
   Heart,
-  User,
-  Bell,
   Menu,
   X,
   LogOut,
@@ -54,7 +52,6 @@ export default function Navbar() {
     { name: "Explore Events", href: "/explore", icon: Search },
     { name: "My Tickets", href: "/bookings", icon: Ticket },
     { name: "Wishlist", href: "/wishlist", icon: Heart },
-    { name: "Profile", href: "/profile", icon: User },
   ];
 
   const getInitials = (name?: string) => {
@@ -112,14 +109,6 @@ export default function Navbar() {
               </div>
             ) : user ? (
               <>
-                <button
-                  type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.08] hover:bg-white/[0.14] !text-slate-200 hover:!text-white transition-all active:scale-95"
-                  aria-label="Notifications"
-                >
-                  <Bell className="h-4 w-4" />
-                </button>
-
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-[#ff5236] focus:ring-offset-2 focus:ring-offset-[#0c0d28]">
@@ -145,6 +134,9 @@ export default function Navbar() {
                       </p>
                       <p className="text-xs !text-slate-400 truncate">
                         {user.email}
+                      </p>
+                      <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-[#ff6849]">
+                        {user.role === "SUPER_ADMIN" ? "Administrator" : user.role === "SELLER" ? "Organizer" : "Attendee"}
                       </p>
                     </div>
 
@@ -211,7 +203,7 @@ export default function Navbar() {
                       className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
                     >
                       <Link
-                        href="/settings"
+                        href="/setting"
                         className="flex items-center gap-2"
                       >
                         <Settings className="h-4 w-4 text-slate-400" />

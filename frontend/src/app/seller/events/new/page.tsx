@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -21,15 +22,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { eventFormSchema, type EventFormInput } from "@/lib/validators";
 import { useEventFilters } from "@/hooks/useEvent";
 import { useCreateSellerEvent } from "@/hooks/useSellerEvent";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function CreateSellerEventPage() {
   const router = useRouter();
   const { data: filters } = useEventFilters();
   const createEvent = useCreateSellerEvent();
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [areaOpen, setAreaOpen] = useState(false);
   const form = useForm<EventFormInput>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -48,6 +66,13 @@ export default function CreateSellerEventPage() {
       coverImage: "",
     },
   });
+
+  const selectedCategory = filters?.categories.find(
+    (category) => category.id === form.watch("categoryId"),
+  );
+  const selectedArea = filters?.areas.find(
+    (area) => area.id === form.watch("areaId"),
+  );
 
   const handleSubmit = form.handleSubmit((data) => {
     createEvent.mutate(data, {
@@ -81,22 +106,54 @@ export default function CreateSellerEventPage() {
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="category">Category</FieldLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={createEvent.isPending}
-                      >
-                        <SelectTrigger id="category">
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {filters?.categories.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+                        <PopoverTrigger>
+                          <Button
+                            id="category"
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={categoryOpen}
+                            className="w-full justify-between"
+                            disabled={createEvent.isPending}
+                          >
+                            {selectedCategory?.name ?? "Select category..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search categories..." />
+                            <CommandList>
+                              <CommandEmpty>No category found.</CommandEmpty>
+                              <CommandGroup>
+                                {filters?.categories.map((category) => (
+                                  <CommandItem
+                                    key={category.id}
+                                    value={category.name}
+                                    onSelect={() => {
+                                      field.onChange(
+                                        field.value === category.id ? "" : category.id,
+                                      );
+                                      setCategoryOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === category.id
+                                          ? "opacity-100"
+                                          : "opacity-0",
+                                      )}
+                                    />
+                                    {category.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
@@ -110,22 +167,54 @@ export default function CreateSellerEventPage() {
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="area">Area</FieldLabel>
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={createEvent.isPending}
-                      >
-                        <SelectTrigger id="area">
-                          <SelectValue placeholder="Select area" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {filters?.areas.map((area) => (
-                            <SelectItem key={area.id} value={area.id}>
-                              {area.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover open={areaOpen} onOpenChange={setAreaOpen}>
+                        <PopoverTrigger>
+                          <Button
+                            id="area"
+                            type="button"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={areaOpen}
+                            className="w-full justify-between"
+                            disabled={createEvent.isPending}
+                          >
+                            {selectedArea?.name ?? "Select area..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search areas..." />
+                            <CommandList>
+                              <CommandEmpty>No area found.</CommandEmpty>
+                              <CommandGroup>
+                                {filters?.areas.map((area) => (
+                                  <CommandItem
+                                    key={area.id}
+                                    value={area.name}
+                                    onSelect={() => {
+                                      field.onChange(
+                                        field.value === area.id ? "" : area.id,
+                                      );
+                                      setAreaOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === area.id
+                                          ? "opacity-100"
+                                          : "opacity-0",
+                                      )}
+                                    />
+                                    {area.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}

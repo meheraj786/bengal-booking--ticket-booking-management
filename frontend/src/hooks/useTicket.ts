@@ -39,6 +39,7 @@ export function useDeleteTicket(eventId: string): UseMutationResult<Ticket, ApiE
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ticketKeys.list(eventId) });
       queryClient.invalidateQueries({ queryKey: ["sellerTickets", "list", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["sellerEvents", "list"] });
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
       queryClient.invalidateQueries({ queryKey: eventKeys.all });
     },

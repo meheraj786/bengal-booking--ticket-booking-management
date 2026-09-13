@@ -4,8 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { Ticket, Plus } from "lucide-react";
 import Logo from "./Logo";
+import { useAuthStore } from "@/hooks/useAuthStore";
 
 export default function Footer() {
+  const { user } = useAuthStore();
   const links = [
     { name: "About us", href: "/about" },
     { name: "Help center", href: "/help" },
@@ -38,7 +40,7 @@ export default function Footer() {
             ))}
           </nav>
 
-          <div>
+          {(!user || user.role === "USER") && <div>
             <Link
               href="/seller/terms"
               className="inline-flex items-center gap-2 bg-[#ff5d41] hover:bg-[#eb4f34] active:scale-95 !text-white font-semibold text-xs sm:text-sm px-6 py-3 rounded-full shadow-[0_4px_20px_rgba(255,93,65,0.4)] hover:shadow-[0_6px_24px_rgba(255,93,65,0.55)] transition-all cursor-pointer"
@@ -46,7 +48,7 @@ export default function Footer() {
               <Plus className="w-4 h-4 stroke-[2.5] !text-white" />
               <span className="!text-white">Sell Tickets</span>
             </Link>
-          </div>
+          </div>}
         </div>
       </div>
     </footer>

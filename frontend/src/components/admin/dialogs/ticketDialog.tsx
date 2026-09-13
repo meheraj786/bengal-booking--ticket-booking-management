@@ -85,7 +85,9 @@ export function TicketDialog({
                   <FieldLabel htmlFor="ticket-quantity">Quantity</FieldLabel>
                   <Input
                     {...field}
+                    value={field.value}
                     type="number"
+                    min="1"
                     id="ticket-quantity"
                     placeholder="100"
                     onChange={(e) => field.onChange(parseInt(e.target.value))}

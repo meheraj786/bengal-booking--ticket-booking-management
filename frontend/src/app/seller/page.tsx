@@ -2,7 +2,15 @@
 
 import { useState, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Trash2, Edit, CheckCircle2, Plus } from "lucide-react";
+import {
+  ArrowUpDown,
+  Trash2,
+  Edit,
+  CheckCircle2,
+  Plus,
+  TicketPlus,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
 import DataTable from "@/components/data-table";
 import { DeleteDialog } from "@/components/admin/dialogs/deleteDialog";
@@ -13,6 +21,9 @@ import {
   usePublishSellerEvent,
   useDeleteSellerEvent,
 } from "@/hooks/useSellerEvent";
+import { useCreateTickets } from "@/hooks/useTicket";
+import { TicketDialog } from "@/components/admin/dialogs/ticketDialog";
+import type { TicketFormInput } from "@/lib/validators";
 import type { Event } from "@/types/event.types";
 import type { PaginationParams } from "@/components/data-table";
 
@@ -22,21 +33,47 @@ export default function SellerEventsPage() {
     pageSize: 10,
   });
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [ticketEvent, setTicketEvent] = useState<Event | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
-  const { data: eventResult, isLoading, error } = useSellerEventList({
+  const {
+    data: eventResult,
+    isLoading,
+    error,
+  } = useSellerEventList({
     page: pagination.page,
     limit: pagination.pageSize,
   });
   const events = eventResult?.data ?? [];
-  const publishEvent = usePublishSellerEvent("");
   const deleteEvent = useDeleteSellerEvent();
+  const publishEvent = usePublishSellerEvent();
+  const createTickets = useCreateTickets(ticketEvent?.id ?? "");
 
   const handlePublish = useCallback(
     (eventId: string) => {
-      publishEvent.mutate(undefined);
+      setPublishError(null);
+      publishEvent.mutate(eventId, {
+        onError: (error) => {
+          setPublishError(
+            error.message.toLowerCase().includes("ticket")
+              ? "Add at least one active ticket before publishing this event."
+              : error.message,
+          );
+        },
+      });
     },
     [publishEvent],
   );
+
+  const handleAddTickets = (data: TicketFormInput) => {
+    if (!ticketEvent) return;
+    createTickets.mutate(
+      { ...data, quantity: Number(data.quantity), description: data.description ?? "" },
+      {
+        onSuccess: () => setTicketEvent(null),
+      },
+    );
+  };
 
   const handleDelete = useCallback(() => {
     if (!deletingEventId) return;
@@ -61,12 +98,15 @@ export default function SellerEventsPage() {
         </Button>
       ),
       cell: ({ row }) => (
-        <div className="flex flex-col">
+        <Link
+          href={`/seller/events/${row.original.id}`}
+          className="flex flex-col"
+        >
           <span className="font-medium">{row.getValue("title")}</span>
           <span className="text-xs text-gray-500">
             {row.original.category?.name}
           </span>
-        </div>
+        </Link>
       ),
     },
     {
@@ -121,6 +161,14 @@ export default function SellerEventsPage() {
               <CheckCircle2 className="w-4 h-4 text-green-600" />
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTicketEvent(row.original)}
+            title="Add tickets"
+          >
+            <TicketPlus className="w-4 h-4 text-blue-600" />
+          </Button>
           <Button variant="ghost" size="sm" asChild>
             <Link href={`/seller/events/${row.original.id}/edit`}>
               <Edit className="w-4 h-4" />
@@ -146,7 +194,7 @@ export default function SellerEventsPage() {
           <p className="text-gray-600">Create and manage your events</p>
         </div>
         <Button asChild>
-          <Link href="/seller/terms">
+          <Link href="/seller/events/new">
             <Plus className="w-4 h-4 mr-2" />
             Create Event
           </Link>
@@ -168,6 +216,35 @@ export default function SellerEventsPage() {
         enablePagination
         loading={isLoading}
         emptyMessage={error ? "Failed to load events" : "No events found"}
+      />
+
+      {publishError && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
+          <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold">Event cannot be published</p>
+            <p className="mt-1">{publishError}</p>
+          </div>
+          <button
+            type="button"
+            aria-label="Dismiss publish error"
+            className="text-red-500 hover:text-red-700"
+            onClick={() => setPublishError(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      <TicketDialog
+        open={!!ticketEvent}
+        onOpenChange={(open) => !open && setTicketEvent(null)}
+        onSubmit={handleAddTickets}
+        eventTitle={ticketEvent?.title}
+        isLoading={createTickets.isPending}
       />
 
       <DeleteDialog

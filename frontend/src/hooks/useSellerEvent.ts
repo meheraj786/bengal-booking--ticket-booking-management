@@ -75,12 +75,13 @@ export function useUpdateSellerEvent(
 }
 
 export function usePublishSellerEvent(
-  id: string,
-): UseMutationResult<Event, ApiError, void> {
+  _id?: string,
+): UseMutationResult<Event, ApiError, string | void> {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => sellerService.publishEvent(id),
-    onSuccess: () => {
+    mutationFn: (eventId) => sellerService.publishEvent(eventId ?? _id ?? ""),
+    onSuccess: (_, eventId) => {
+      const id = eventId ?? _id ?? "";
       queryClient.invalidateQueries({ queryKey: sellerEventKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: sellerEventKeys.list() });
       queryClient.invalidateQueries({ queryKey: ["events", "detail", id] });

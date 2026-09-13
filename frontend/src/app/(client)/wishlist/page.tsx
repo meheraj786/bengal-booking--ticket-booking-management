@@ -1,9 +1,21 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
+import { Heart, MapPin } from "lucide-react";
+import { getWishlist, type WishlistEvent } from "@/lib/wishlist";
 
 export default function WishlistPage() {
+  const [events, setEvents] = useState<WishlistEvent[]>([]);
+  useEffect(() => {
+    const sync = () => setEvents(getWishlist());
+    sync();
+    window.addEventListener("wishlistchange", sync);
+    return () => window.removeEventListener("wishlistchange", sync);
+  }, []);
+
   return (
     <main className="min-h-screen">
       <section className="mx-auto w-[min(1180px,calc(100%-48px))] py-[75px] max-md:w-[calc(100%-32px)]">
@@ -31,14 +43,41 @@ export default function WishlistPage() {
           </Link>
         </div>
 
-        <Card>
-          <CardContent className="p-12 text-center">
-            <p className="text-gray-600 mb-4">Wishlist feature coming soon!</p>
-            <p className="text-sm text-gray-500">
-              Start adding events to your wishlist to save them for later.
-            </p>
-          </CardContent>
-        </Card>
+        {events.length === 0 ? (
+          <Card><CardContent className="p-12 text-center">
+            <p className="mb-4 text-gray-600">Your wishlist is empty.</p>
+            <p className="text-sm text-gray-500">Save events you want to revisit later.</p>
+          </CardContent></Card>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {events.map((event) => (
+              <Card key={event.id} className="overflow-hidden">
+                <div className="relative aspect-[16/10] bg-slate-100">
+                  {event.coverImage && <Image src={event.coverImage} alt={event.title} fill className="object-cover" />}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = getWishlist().filter((item) => item.id !== event.id);
+                      localStorage.setItem("bengal-booking-wishlist", JSON.stringify(next));
+                      window.dispatchEvent(new Event("wishlistchange"));
+                      setEvents(next);
+                    }}
+                    className="absolute right-3 top-3 rounded-full bg-white p-2 text-red-500"
+                    aria-label={`Remove ${event.title} from wishlist`}
+                  >
+                    <Heart className="h-4 w-4 fill-current" />
+                  </button>
+                </div>
+                <CardContent className="space-y-2 p-4">
+                  <Link href={`/events/${event.id}`} className="font-semibold hover:text-primary">{event.title}</Link>
+                  <p className="text-xs text-primary">{new Date(event.startAt).toLocaleString()}</p>
+                  <p className="flex items-center gap-1 text-xs text-slate-500"><MapPin className="h-3.5 w-3.5" />{event.venueName}, {event.areaName ?? event.venueAddress}</p>
+                  <p className="text-sm font-semibold">{event.paymentType}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );

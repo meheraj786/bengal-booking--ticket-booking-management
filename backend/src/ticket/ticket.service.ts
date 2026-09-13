@@ -52,9 +52,14 @@ export class TicketService {
     if (user.role !== "SUPER_ADMIN" && event.sellerId !== user.id)
       throw new ForbiddenException("You do not own this event");
 
+    const quantity = Number(dto.quantity);
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      throw new BadRequestException("Ticket quantity must be a positive whole number");
+    }
+
     return this.prisma.$transaction(async (tx) => {
-      await tx.ticket.createMany({
-        data: Array.from({ length: dto.quantity }, (_, index) => ({
+      const createdTickets = await tx.ticket.createManyAndReturn({
+        data: Array.from({ length: quantity }, () => ({
           eventId,
           name: dto.name,
           description: dto.description,
@@ -63,11 +68,7 @@ export class TicketService {
         })),
       });
 
-      return tx.ticket.findMany({
-        where: { eventId },
-        orderBy: { createdAt: "desc" },
-        take: dto.quantity,
-      });
+      return createdTickets;
     });
   }
 

@@ -61,7 +61,7 @@ export class BookingController {
 
   @Get(":bookingId")
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Roles(Role.USER, Role.SELLER, Role.SUPER_ADMIN)
   get(@Param("bookingId") id: string, @CurrentUser() user: AuthUser) {
     return this.bookings.getForUser(id, user.id);
   }
@@ -86,7 +86,7 @@ export class BookingController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Roles(Role.USER, Role.SELLER, Role.SUPER_ADMIN)
   create(@Body() dto: CreateBookingDto, @CurrentUser() user: AuthUser) {
     if (!user.isVerified)
       throw new ForbiddenException("Verify your email before booking tickets");
@@ -100,7 +100,7 @@ export class BookingController {
 
   @Post(":bookingId/confirm")
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Roles(Role.USER, Role.SELLER, Role.SUPER_ADMIN)
   confirm(
     @Param("bookingId") bookingId: string,
     @Body() _dto: ConfirmBookingDto,
@@ -118,7 +118,7 @@ export class BookingController {
 
   @Post("checkout")
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.USER)
+  @Roles(Role.USER, Role.SELLER, Role.SUPER_ADMIN)
   checkout(@Body() dto: CheckoutDto, @CurrentUser() user: AuthUser) {
     if (dto.eventId && dto.quantity && dto.ticketName && dto.buyerName && dto.buyerAddress && dto.buyerPhone) {
       if (!user.isVerified)

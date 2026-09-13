@@ -39,15 +39,19 @@ export default function CheckoutPage() {
     (sum, selection) => sum + Number(event?.tickets?.find((ticket) => ticket.name === selection.ticketName)?.price ?? 0) * selection.quantity,
     0,
   );
-  const isFree = event?.paymentType === "Free" || amount === 0;
-  const canSubmit = isFree || Object.values(card).every(Boolean);
+  const requiresPayment = event?.paymentType === "Advance" && amount > 0;
+  const canSubmit = !requiresPayment || Object.values(card).every(Boolean);
+  const noPaymentMessage =
+    event?.paymentType === "OnArrival"
+      ? "Payment will be collected at the venue."
+      : "No payment is required for this free event.";
 
   const submit = () => {
     if (!canSubmit || !user?.isVerified) return;
     complete.mutate(data, {
       onSuccess: (booking) => {
         sessionStorage.removeItem(`checkout:${eventId}`);
-        router.push(`/bookings/${booking.id}/tickets`);
+        router.push(`/bookings/${booking.id}`);
       },
     });
   };
@@ -56,12 +60,23 @@ export default function CheckoutPage() {
     <main className="min-h-screen bg-slate-50 p-4 py-10">
       <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-[1fr_360px]">
         <Card>
-          <CardHeader><CardTitle>{isFree ? "Complete free booking" : "Payment"}</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>{requiresPayment ? "Payment" : "Complete booking"}</CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <p className="font-semibold">{event?.title}</p>
-            <p>{data.ticketName} × {data.quantity}</p>
+            <div className="space-y-1">
+              {(data.ticketSelections ?? [{ ticketName: data.ticketName, quantity: data.quantity }]).map((selection) => (
+                <p key={selection.ticketName}>{selection.ticketName} × {selection.quantity}</p>
+              ))}
+            </div>
             <p className="text-xl font-bold">৳{amount.toLocaleString()}</p>
-            {!isFree && (
+            {!requiresPayment && (
+              <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
+                {noPaymentMessage}
+              </p>
+            )}
+            {requiresPayment && (
               <>
                 <Input placeholder="Cardholder name" value={card.name} onChange={(e) => setCard({ ...card, name: e.target.value })} />
                 <Input placeholder="4242 4242 4242 4242" value={card.number} onChange={(e) => setCard({ ...card, number: e.target.value })} />
@@ -74,12 +89,21 @@ export default function CheckoutPage() {
             )}
             {complete.isError && <p className="text-sm text-red-600">{complete.error.message}</p>}
             <Button className="w-full" onClick={submit} disabled={complete.isPending || !canSubmit}>
-              {complete.isPending ? "Processing..." : isFree ? "Complete free booking" : "Pay and complete booking"}
+              {complete.isPending
+                ? "Processing..."
+                : requiresPayment
+                  ? "Pay and complete booking"
+                  : "Complete booking"}
             </Button>
             <Link className="block text-center text-sm underline" href={`/events/${eventId}`}>Back to event</Link>
           </CardContent>
         </Card>
-        <Card className="h-fit"><CardHeader><CardTitle>Order summary</CardTitle></CardHeader><CardContent><p>{data.quantity} ticket(s)</p><p className="mt-2 font-bold">Total ৳{amount.toLocaleString()}</p></CardContent></Card>
+        <Card className="h-fit"><CardHeader><CardTitle>Order summary</CardTitle></CardHeader><CardContent className="space-y-2">
+          {(data.ticketSelections ?? [{ ticketName: data.ticketName, quantity: data.quantity }]).map((selection) => (
+            <div key={selection.ticketName} className="flex justify-between gap-3 text-sm"><span>{selection.ticketName} × {selection.quantity}</span><span>৳{(Number(event?.tickets?.find((ticket) => ticket.name === selection.ticketName)?.price ?? 0) * selection.quantity).toLocaleString()}</span></div>
+          ))}
+          <p className="border-t pt-2 font-bold">Total ৳{amount.toLocaleString()}</p>
+        </CardContent></Card>
       </div>
     </main>
   );
