@@ -1,0 +1,6 @@
+ALTER TABLE "Ticket"
+ADD COLUMN "name" TEXT NOT NULL DEFAULT 'General Admission',
+ADD COLUMN "description" TEXT NOT NULL DEFAULT '';
+
+ALTER TABLE "Ticket"
+DROP COLUMN "note";

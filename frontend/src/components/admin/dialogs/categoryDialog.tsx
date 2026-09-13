@@ -25,6 +25,7 @@ import {
   type CategoryFormInput,
 } from "@/lib/validators";
 import type { Category } from "@/types/category.types";
+import { slugify } from "@/lib/slugify";
 
 interface CategoryDialogProps {
   open: boolean;
@@ -47,6 +48,7 @@ export function CategoryDialog({
       name: "",
       slug: "",
       description: "",
+      image: "",
     },
   });
 
@@ -56,12 +58,14 @@ export function CategoryDialog({
         name: category.name,
         slug: category.slug,
         description: category.description || "",
+        image: category.image || "",
       });
     } else {
       form.reset({
         name: "",
         slug: "",
         description: "",
+        image: "",
       });
     }
   }, [category, form, open]);
@@ -69,12 +73,7 @@ export function CategoryDialog({
   const handleNameChange = (value: string) => {
     form.setValue("name", value);
     if (!form.getValues("slug") || category === undefined) {
-      const slug = value
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, "-")
-        .replace(/[^\w-]/g, "");
-      form.setValue("slug", slug);
+      form.setValue("slug", slugify(value));
     }
   };
 
@@ -157,6 +156,18 @@ export function CategoryDialog({
                     disabled={isLoading}
                     rows={3}
                     aria-invalid={fieldState.invalid}
+                  />
+                  <Controller
+                    name="image"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="category-image">Image URL</FieldLabel>
+                        <Input {...field} id="category-image" type="url" placeholder="https://..." disabled={isLoading} />
+                        <FieldDescription>Paste a public image URL for this category.</FieldDescription>
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
                   />
                   <FieldDescription>
                     Describe what types of events fit in this category

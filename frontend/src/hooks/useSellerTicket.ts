@@ -6,8 +6,8 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { sellerService } from "@/services/seller.service";
-import { ApiError } from "@/lib/api-client";
-import type { Ticket, CreateTicketPayload } from "@/types/ticket.types";
+import { ApiError, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
+import type { Ticket, CreateTicketPayload, UpdateTicketPayload } from "@/types/ticket.types";
 
 export const sellerTicketKeys = {
   all: ["sellerTickets"] as const,
@@ -17,10 +17,11 @@ export const sellerTicketKeys = {
 
 export function useSellerTicketList(
   eventId: string,
-): UseQueryResult<Ticket[], ApiError> {
+  params?: PaginationParams,
+): UseQueryResult<PaginatedResponse<Ticket>, ApiError> {
   return useQuery({
-    queryKey: sellerTicketKeys.list(eventId),
-    queryFn: () => sellerService.getEventTickets(eventId),
+    queryKey: [...sellerTicketKeys.list(eventId), params],
+    queryFn: () => sellerService.getEventTickets(eventId, params),
     staleTime: 2 * 60 * 1000,
     enabled: !!eventId,
   });
@@ -36,6 +37,9 @@ export function useCreateSellerTickets(
       queryClient.invalidateQueries({
         queryKey: sellerTicketKeys.list(eventId),
       });
+      queryClient.invalidateQueries({ queryKey: ["tickets", "list", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "detail", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "list"] });
     },
   });
 }
@@ -43,7 +47,7 @@ export function useCreateSellerTickets(
 export function useUpdateSellerTicket(
   eventId: string,
   ticketId: string,
-): UseMutationResult<Ticket, ApiError, { status?: string; note?: string }> {
+): UseMutationResult<Ticket, ApiError, UpdateTicketPayload> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload) =>
@@ -52,6 +56,22 @@ export function useUpdateSellerTicket(
       queryClient.invalidateQueries({
         queryKey: sellerTicketKeys.list(eventId),
       });
+      queryClient.invalidateQueries({ queryKey: ["tickets", "list", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "detail", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "list"] });
+    },
+  });
+}
+
+export function useDeleteSellerTicket(eventId: string): UseMutationResult<Ticket, ApiError, string> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ticketId) => sellerService.deleteTicket(eventId, ticketId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sellerTicketKeys.list(eventId) });
+      queryClient.invalidateQueries({ queryKey: ["tickets", "list", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "detail", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "list"] });
     },
   });
 }

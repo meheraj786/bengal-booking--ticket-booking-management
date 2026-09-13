@@ -1,5 +1,6 @@
-export type EventStatus = "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
+import type { PaginationParams } from "@/lib/api-client";
 
+export type EventStatus = "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
 export interface Event {
   id: string;
   sellerId: string;
@@ -11,10 +12,14 @@ export interface Event {
   venueAddress: string;
   startAt: string;
   endAt: string;
+  maxTicketsPerBooking: number;
+  lastDateAndTimeOfCancel?: string;
+  lastDateOfBooking?: string;
+  paymentType: "Advance" | "OnArrival" | "Free";
+  /** Deprecated compatibility fields for legacy client-only views. */
   price: string;
   totalTickets: number;
   soldTickets: number;
-  maxTicketsPerBooking: number;
   status: EventStatus;
   coverImage?: string;
   createdAt: string;
@@ -28,7 +33,7 @@ export interface Event {
   };
 }
 
-export interface EventListFilters {
+export interface EventListFilters extends PaginationParams {
   category?: string;
   division?: string;
   area?: string;
@@ -48,9 +53,10 @@ export interface CreateEventPayload {
   venueAddress: string;
   startAt: string;
   endAt: string;
-  totalTickets: number;
   maxTicketsPerBooking: number;
-  price: number;
+  lastDateAndTimeOfCancel: string;
+  lastDateOfBooking: string;
+  paymentType: "Advance" | "OnArrival" | "Free";
   coverImage?: string;
 }
 
@@ -63,9 +69,10 @@ export interface UpdateEventPayload {
   venueAddress?: string;
   startAt?: string;
   endAt?: string;
-  totalTickets?: number;
   maxTicketsPerBooking?: number;
-  price?: number;
+  lastDateAndTimeOfCancel?: string;
+  lastDateOfBooking?: string;
+  paymentType?: "Advance" | "OnArrival" | "Free";
   coverImage?: string;
   status?: EventStatus;
 }
@@ -84,9 +91,10 @@ export interface EventFormInput {
   venueAddress: string;
   startAt: string;
   endAt: string;
-  totalTickets: number;
   maxTicketsPerBooking: number;
-  price: number;
+  lastDateAndTimeOfCancel: string;
+  lastDateOfBooking: string;
+  paymentType: "Advance" | "OnArrival" | "Free";
   coverImage?: string;
 }
 

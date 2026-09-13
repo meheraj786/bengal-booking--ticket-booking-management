@@ -19,10 +19,13 @@ import {
 import {
   useSellerTicketList,
   useCreateSellerTickets,
+  useUpdateSellerTicket,
+  useDeleteSellerTicket,
 } from "@/hooks/useSellerTicket";
 import { useSellerEventBookings } from "@/hooks/useSellerBooking";
 import type { Ticket } from "@/types/ticket.types";
 import type { PaginationParams } from "@/components/data-table";
+import { bookingService } from "@/services/booking.service";
 
 export default function SellerEventDetailPage() {
   const params = useParams();
@@ -35,13 +38,17 @@ export default function SellerEventDetailPage() {
   });
   const [isTicketDialogOpen, setIsTicketDialogOpen] = useState(false);
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
+  const [updatingBookingId, setUpdatingBookingId] = useState<string | null>(null);
 
   const { data: event, isLoading } = useSellerEvent(eventId);
-  const { data: tickets = [] } = useSellerTicketList(eventId);
-  const { data: bookings = [] } = useSellerEventBookings(eventId);
+  const { data: ticketResult } = useSellerTicketList(eventId, { page: pagination.page, limit: pagination.pageSize });
+  const { data: bookingResult } = useSellerEventBookings(eventId, { page: pagination.page, limit: pagination.pageSize });
+  const tickets = ticketResult?.data ?? [];
+  const bookings = bookingResult?.data ?? [];
   const createTickets = useCreateSellerTickets(eventId);
   const publishEvent = usePublishSellerEvent(eventId);
   const deleteEvent = useDeleteSellerEvent();
+  const deleteTicket = useDeleteSellerTicket(eventId);
 
   if (isLoading) {
     return <div className="text-center py-8">Loading event...</div>;
@@ -60,9 +67,23 @@ export default function SellerEventDetailPage() {
 
   const ticketColumns: ColumnDef<Ticket>[] = [
     {
-      accessorKey: "ticketNumber",
-      header: "Ticket #",
-      cell: ({ row }) => `#${row.getValue("ticketNumber")}`,
+      accessorKey: "id",
+      header: "Ticket ID",
+      cell: ({ row }) => `#${row.original.id.slice(0, 8)}`,
+    },
+    {
+      accessorKey: "name",
+      header: "Name",
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+      cell: ({ row }) => row.original.description || "—",
+    },
+    {
+      accessorKey: "price",
+      header: "Price",
+      cell: ({ row }) => `৳${Number(row.original.price).toLocaleString()}`,
     },
     {
       accessorKey: "status",
@@ -80,11 +101,6 @@ export default function SellerEventDetailPage() {
         };
         return <Badge variant={variants[status]}>{status}</Badge>;
       },
-    },
-    {
-      accessorKey: "note",
-      header: "Note",
-      cell: ({ row }) => row.getValue("note") || "—",
     },
     {
       accessorKey: "createdAt",
@@ -128,6 +144,30 @@ export default function SellerEventDetailPage() {
         };
         return <Badge variant={variants[status]}>{status}</Badge>;
       },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) =>
+        row.original.status !== "CANCELLED" && row.original.status !== "EXPIRED" ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={updatingBookingId === row.original.id}
+            onClick={async (event) => {
+              event.stopPropagation();
+              setUpdatingBookingId(row.original.id);
+              try {
+                await bookingService.cancel(row.original.id);
+                window.location.reload();
+              } finally {
+                setUpdatingBookingId(null);
+              }
+            }}
+          >
+            Cancel
+          </Button>
+        ) : null,
     },
   ];
 
@@ -211,7 +251,7 @@ export default function SellerEventDetailPage() {
         <DataTable
           columns={ticketColumns}
           data={tickets}
-          totalCount={tickets.length}
+          totalCount={ticketResult?.pagination.total ?? 0}
           currentPage={pagination.page}
           pageSize={pagination.pageSize}
           onPaginationChange={setPagination}
@@ -231,7 +271,7 @@ export default function SellerEventDetailPage() {
         <DataTable
           columns={bookingColumns}
           data={bookings}
-          totalCount={bookings.length}
+          totalCount={bookingResult?.pagination.total ?? 0}
           currentPage={pagination.page}
           pageSize={pagination.pageSize}
           onPaginationChange={setPagination}

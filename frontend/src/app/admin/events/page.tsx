@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Trash2, Edit, CheckCircle2, Zap } from "lucide-react";
+import { ArrowUpDown, Trash2, Edit, CheckCircle2, Ticket } from "lucide-react";
+import Link from "next/link";
 import DataTable from "@/components/data-table";
 import { EventDialog } from "@/components/admin/dialogs/eventDialog";
 import { DeleteDialog } from "@/components/admin/dialogs/deleteDialog";
@@ -28,7 +29,15 @@ export default function EventsPage() {
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: events = [], isLoading, error } = useEventList();
+  const {
+    data: eventResult,
+    isLoading,
+    error,
+  } = useEventList({
+    page: pagination.page,
+    limit: pagination.pageSize,
+  });
+  const events = eventResult?.data ?? [];
   const { data: filters } = useEventFilters();
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent(editingEvent?.id || "");
@@ -135,9 +144,9 @@ export default function EventsPage() {
         new Date(row.getValue("startAt") as string).toLocaleDateString(),
     },
     {
-      accessorKey: "price",
-      header: "Price",
-      cell: ({ row }) => `৳${row.getValue("price")}`,
+      accessorKey: "paymentType",
+      header: "Payment",
+      cell: ({ row }) => row.original.paymentType,
     },
     {
       accessorKey: "_count.bookings",
@@ -153,6 +162,11 @@ export default function EventsPage() {
       header: "Actions",
       cell: ({ row }) => (
         <div className="flex gap-2">
+          <Button variant="ghost" size="sm" asChild title="Manage tickets">
+            <Link href={`/admin/events/${row.original.id}`}>
+              <Ticket className="w-4 h-4" />
+            </Link>
+          </Button>
           {row.original.status === "DRAFT" && (
             <Button
               variant="ghost"
@@ -195,7 +209,7 @@ export default function EventsPage() {
       <DataTable
         columns={columns}
         data={events}
-        totalCount={events.length}
+        totalCount={eventResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
         onPaginationChange={setPagination}

@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type {
   Booking,
   CreateBookingPayload,
@@ -9,8 +9,8 @@ import type {
 } from "@/types/booking.types";
 
 export const bookingService = {
-  list: async (): Promise<Booking[]> => {
-    const { data } = await apiClient.get<Booking[]>("/bookings");
+  list: async (params?: PaginationParams): Promise<PaginatedResponse<Booking>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Booking>>("/bookings", { params });
     return data;
   },
 
@@ -53,6 +53,10 @@ export const bookingService = {
       `/bookings/${id}/expire`,
       {},
     );
+    return data;
+  },
+  cancel: async (id: string): Promise<Booking> => {
+    const { data } = await apiClient.post<Booking>(`/bookings/${id}/cancel`, {});
     return data;
   },
 };

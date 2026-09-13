@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { bookingService } from "@/services/booking.service";
 import { ApiError } from "@/lib/api-client";
+import type { PaginatedResponse, PaginationParams } from "@/lib/api-client";
 import type {
   Booking,
   CreateBookingPayload,
@@ -15,6 +16,9 @@ import type {
   CheckoutResponse,
   ConfirmBookingPayload,
 } from "@/types/booking.types";
+import { sellerBookingKeys } from "@/hooks/useSellerBooking";
+import { paymentKeys } from "@/hooks/usePayment";
+import { queryKeys } from "@/lib/query-keys";
 
 export const bookingKeys = {
   all: ["bookings"] as const,
@@ -22,10 +26,10 @@ export const bookingKeys = {
   detail: (id: string) => [...bookingKeys.all, "detail", id] as const,
 };
 
-export function useBookingList(): UseQueryResult<Booking[], ApiError> {
+export function useBookingList(params?: PaginationParams): UseQueryResult<PaginatedResponse<Booking>, ApiError> {
   return useQuery({
-    queryKey: bookingKeys.list(),
-    queryFn: bookingService.list,
+    queryKey: [...bookingKeys.list(), params],
+    queryFn: () => bookingService.list(params),
     staleTime: 30 * 1000,
   });
 }
@@ -56,6 +60,10 @@ export function useCreateBooking(): UseMutationResult<
           expiresAt: data.expiresAt,
         }),
       );
+      queryClient.invalidateQueries({ queryKey: bookingKeys.list() });
+      queryClient.invalidateQueries({ queryKey: sellerBookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: paymentKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
     },
   });
 }
@@ -72,6 +80,10 @@ export function useCheckoutBooking(): UseMutationResult<
       queryClient.invalidateQueries({
         queryKey: bookingKeys.detail(data.bookingId),
       });
+      queryClient.invalidateQueries({ queryKey: bookingKeys.list() });
+      queryClient.invalidateQueries({ queryKey: sellerBookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: paymentKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
     },
   });
 }
@@ -85,6 +97,10 @@ export function useConfirmBooking(
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.list() });
       queryClient.invalidateQueries({ queryKey: bookingKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: sellerBookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: paymentKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
     },
   });
 }
@@ -98,6 +114,25 @@ export function useExpireBooking(
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.list() });
       queryClient.invalidateQueries({ queryKey: bookingKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: sellerBookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: paymentKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
+    },
+  });
+}
+
+export function useCancelBooking(id: string): UseMutationResult<Booking, ApiError, void> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => bookingService.cancel(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bookingKeys.list() });
+      queryClient.invalidateQueries({ queryKey: bookingKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: sellerBookingKeys.all });
+      queryClient.invalidateQueries({ queryKey: paymentKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.userDashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
     },
   });
 }

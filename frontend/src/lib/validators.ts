@@ -55,7 +55,11 @@ export const areaFormSchema = z.object({
 });
 export type AreaFormInput = z.infer<typeof areaFormSchema>;
 
-export const divisionFormSchema = areaFormSchema;
+export const divisionFormSchema = z.object({
+  name: z.string().min(2).max(100),
+  slug: z.string().min(2).toLowerCase().regex(/^[a-z0-9-]+$/).max(100),
+  image: z.string().url("Invalid image URL").optional().or(z.literal("")),
+});
 export type DivisionFormInput = z.infer<typeof divisionFormSchema>;
 
 export const categoryFormSchema = z.object({
@@ -77,6 +81,7 @@ export const categoryFormSchema = z.object({
     .max(500, "Description is too long")
     .optional()
     .or(z.literal("")),
+  image: z.string().url("Invalid image URL").optional().or(z.literal("")),
 });
 export type CategoryFormInput = z.infer<typeof categoryFormSchema>;
 
@@ -126,18 +131,13 @@ export const eventFormSchema = z.object({
       const date = new Date(val);
       return !isNaN(date.getTime());
     }, "Please select a valid end date and time"),
-  totalTickets: z
-    .number()
-    .int("Total tickets must be a whole number")
-    .min(1, "Event must have at least 1 ticket"),
   maxTicketsPerBooking: z
     .number()
     .int("Max tickets must be a whole number")
     .min(1, "Max tickets per booking must be at least 1"),
-  price: z
-    .number()
-    .min(0, "Price cannot be negative")
-    .max(9999999, "Price is too high"),
+  lastDateAndTimeOfCancel: z.string().min(1, "Cancellation deadline is required"),
+  lastDateOfBooking: z.string().min(1, "Booking deadline is required"),
+  paymentType: z.enum(["Advance", "OnArrival", "Free"]),
   coverImage: z.string().url("Invalid image URL").optional().or(z.literal("")),
 });
 export type EventFormInput = z.infer<typeof eventFormSchema>;
@@ -153,6 +153,21 @@ export const ticketFormSchema = z.object({
     .int("Quantity must be a whole number")
     .min(1, "Quantity must be at least 1")
     .max(10000, "Quantity is too high"),
-  note: z.string().max(500, "Note is too long").optional().or(z.literal("")),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Ticket name must be at least 2 characters")
+    .max(150, "Ticket name is too long"),
+  description: z
+    .string()
+    .trim()
+    .min(2, "Ticket description is required")
+    .max(1000, "Ticket description is too long")
+    .optional()
+    .or(z.literal("")),
+  price: z
+    .number()
+    .min(0, "Price cannot be negative")
+    .multipleOf(0.01, "Price can have at most 2 decimal places"),
 });
 export type TicketFormInput = z.infer<typeof ticketFormSchema>;

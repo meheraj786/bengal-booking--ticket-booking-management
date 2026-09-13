@@ -55,6 +55,35 @@ export class EventController {
     return this.service.areas();
   }
 
+  @Get("seller/mine")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.SUPER_ADMIN)
+  sellerEvents(
+    @CurrentUser() user: AuthUser,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
+    return this.service.getSellerEvents(user, { page, limit });
+  }
+
+  @Get("seller")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.SUPER_ADMIN)
+  sellerEventsAlias(
+    @CurrentUser() user: AuthUser,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
+    return this.service.getSellerEvents(user, { page, limit });
+  }
+
+  @Get("seller/:id")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.SUPER_ADMIN)
+  sellerEvent(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.service.getSellerEvent(id, user);
+  }
+
   @Get(":id")
   get(@Param("id") id: string) {
     return this.service.get(id);

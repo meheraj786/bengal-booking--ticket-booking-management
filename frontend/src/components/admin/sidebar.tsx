@@ -13,6 +13,7 @@ import {
   MapPin,
   Map,
   ShoppingCart,
+  CreditCard,
 } from "lucide-react";
 import { useState } from "react";
 import { useLogout } from "@/hooks/use-auth";
@@ -27,6 +28,7 @@ const navItems = [
   { href: "/admin/areas", label: "Areas", icon: MapPin },
   { href: "/admin/events", label: "Events", icon: Calendar },
   { href: "/admin/bookings", label: "Bookings", icon: ShoppingCart },
+  { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

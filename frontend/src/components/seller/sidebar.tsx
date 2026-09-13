@@ -7,6 +7,7 @@ import {
   Calendar,
   BarChart3,
   Settings,
+  CreditCard,
   LogOut,
 } from "lucide-react";
 import { useState } from "react";
@@ -19,6 +20,7 @@ const navItems = [
   { href: "/seller/events", label: "Events", icon: Calendar },
   { href: "/seller/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/seller/settings", label: "Settings", icon: Settings },
+  { href: "/seller/payments", label: "Payments", icon: CreditCard },
 ];
 
 export function SellerSidebar() {

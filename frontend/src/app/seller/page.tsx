@@ -23,7 +23,11 @@ export default function SellerEventsPage() {
   });
   const [deletingEventId, setDeletingEventId] = useState<string | null>(null);
 
-  const { data: events = [], isLoading, error } = useSellerEventList();
+  const { data: eventResult, isLoading, error } = useSellerEventList({
+    page: pagination.page,
+    limit: pagination.pageSize,
+  });
+  const events = eventResult?.data ?? [];
   const publishEvent = usePublishSellerEvent("");
   const deleteEvent = useDeleteSellerEvent();
 
@@ -89,9 +93,9 @@ export default function SellerEventsPage() {
         new Date(row.getValue("startAt") as string).toLocaleDateString(),
     },
     {
-      accessorKey: "price",
-      header: "Price",
-      cell: ({ row }) => `৳${row.getValue("price")}`,
+      accessorKey: "paymentType",
+      header: "Payment",
+      cell: ({ row }) => row.original.paymentType,
     },
     {
       accessorKey: "_count.bookings",
@@ -152,7 +156,7 @@ export default function SellerEventsPage() {
       <DataTable
         columns={columns}
         data={events}
-        totalCount={events.length}
+        totalCount={eventResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
         onPaginationChange={setPagination}

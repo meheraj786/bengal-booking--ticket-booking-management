@@ -62,9 +62,10 @@ const categoryThemeMap: Record<
 };
 
 export default function CategorySection() {
-  const { data: categories, isLoading } = useCategoryList({
+  const { data: categoryResult, isLoading } = useCategoryList({
     limit: 6,
   });
+  const categories = categoryResult?.data ?? [];
 
   return (
     <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">

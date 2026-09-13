@@ -17,9 +17,7 @@ export function BookingPanel({ event }: BookingPanelProps) {
   const { user } = useAuthStore();
   const createBooking = useCreateBooking();
   const [quantity, setQuantity] = useState(1);
-
-  const availableTickets = event.totalTickets - event.soldTickets;
-  const totalPrice = Number(event.price) * quantity;
+  const [buyer, setBuyer] = useState({ buyerName: "", buyerAddress: "", buyerPhone: "" });
 
   const handleBooking = () => {
     if (!user) {
@@ -36,6 +34,7 @@ export function BookingPanel({ event }: BookingPanelProps) {
       {
         eventId: event.id,
         quantity,
+        ...buyer,
       },
       {
         onSuccess: (data) => {
@@ -47,10 +46,7 @@ export function BookingPanel({ event }: BookingPanelProps) {
 
   return (
     <Card className="sticky top-20 h-fit">
-      <CardHeader>
-        <CardTitle className="text-2xl">৳ {event.price}</CardTitle>
-        <p className="text-sm text-gray-600">per ticket</p>
-      </CardHeader>
+      <CardHeader><CardTitle className="text-2xl">{event.paymentType}</CardTitle></CardHeader>
       <CardContent className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">
@@ -80,40 +76,24 @@ export function BookingPanel({ event }: BookingPanelProps) {
           </p>
         </div>
 
-        <div className="border-t pt-4 space-y-2">
-          <div className="flex justify-between">
-            <span className="text-sm">Subtotal</span>
-            <span className="font-medium">৳ {totalPrice.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm">Service fee</span>
-            <span className="font-medium">৳ 0</span>
-          </div>
-          <div className="border-t pt-2 flex justify-between font-bold text-lg">
-            <span>Total</span>
-            <span>৳ {totalPrice.toFixed(2)}</span>
-          </div>
+        <div className="space-y-2">
+          <input className="w-full rounded border p-2" placeholder="Buyer name" value={buyer.buyerName} onChange={(e) => setBuyer({ ...buyer, buyerName: e.target.value })} />
+          <input className="w-full rounded border p-2" placeholder="Buyer phone" value={buyer.buyerPhone} onChange={(e) => setBuyer({ ...buyer, buyerPhone: e.target.value })} />
+          <textarea className="w-full rounded border p-2" placeholder="Buyer address" value={buyer.buyerAddress} onChange={(e) => setBuyer({ ...buyer, buyerAddress: e.target.value })} />
         </div>
 
-        {availableTickets > 0 ? (
+        {
           <>
             <Button
               onClick={handleBooking}
-              disabled={createBooking.isPending || availableTickets === 0}
+              disabled={createBooking.isPending || !buyer.buyerName || !buyer.buyerPhone || !buyer.buyerAddress}
               className="w-full"
               size="lg"
             >
               {createBooking.isPending ? "Booking..." : "Get tickets"}
             </Button>
-            <p className="text-xs text-center text-gray-500">
-              {availableTickets} tickets available
-            </p>
           </>
-        ) : (
-          <Button disabled className="w-full" size="lg">
-            Sold out
-          </Button>
-        )}
+        }
 
         {createBooking.isError && (
           <p className="text-sm text-red-600 text-center">

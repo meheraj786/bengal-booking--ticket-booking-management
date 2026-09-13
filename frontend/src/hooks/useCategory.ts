@@ -7,24 +7,26 @@ import {
 } from "@tanstack/react-query";
 import { categoryService } from "@/services/category.service";
 import { ApiError } from "@/lib/api-client";
+import type { PaginatedResponse } from "@/lib/api-client";
 import type {
   Category,
   CategoryFilters,
   CreateCategoryPayload,
   UpdateCategoryPayload,
 } from "@/types/category.types";
+import { eventKeys } from "@/hooks/useEvent";
 
 export const categoryKeys = {
   all: ["categories"] as const,
-  list: () => [...categoryKeys.all, "list"] as const,
+  list: (filters?: CategoryFilters) => [...categoryKeys.all, "list", filters] as const,
   detail: (id: string) => [...categoryKeys.all, "detail", id] as const,
 };
 
 export function useCategoryList(
   filters?: CategoryFilters,
-): UseQueryResult<Category[], ApiError> {
+): UseQueryResult<PaginatedResponse<Category>, ApiError> {
   return useQuery({
-    queryKey: categoryKeys.list(),
+    queryKey: categoryKeys.list(filters),
     queryFn: () => categoryService.list(filters),
     staleTime: 5 * 60 * 1000,
   });
@@ -40,6 +42,8 @@ export function useCreateCategory(): UseMutationResult<
     mutationFn: categoryService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });
 }
@@ -53,6 +57,8 @@ export function useUpdateCategory(
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.list() });
       queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });
 }
@@ -65,8 +71,11 @@ export function useDeleteCategory(): UseMutationResult<
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id) => categoryService.delete(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: categoryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });
 }

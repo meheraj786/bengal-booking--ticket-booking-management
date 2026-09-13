@@ -131,8 +131,8 @@ export default function TicketsPage() {
               >
                 <div className="grid grid-cols-3 gap-4 text-center mb-4">
                   <div>
-                    <p className="text-gray-600 text-xs mb-1">Ticket Number</p>
-                    <p className="font-bold text-xl">{ticket.ticketNumber}</p>
+                    <p className="text-gray-600 text-xs mb-1">Ticket Name</p>
+                    <p className="font-bold text-xl">{ticket.name}</p>
                   </div>
                   <div>
                     <p className="text-gray-600 text-xs mb-1">Ticket ID</p>
@@ -145,11 +145,14 @@ export default function TicketsPage() {
                     <Badge className="bg-green-100 text-green-800">VALID</Badge>
                   </div>
                 </div>
-                {ticket.note && (
+                {ticket.description && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs text-yellow-800">
-                    {ticket.note}
+                    {ticket.description}
                   </div>
                 )}
+                <p className="mt-2 text-sm font-medium">
+                  Price: ৳{Number(ticket.price).toLocaleString()}
+                </p>
               </div>
             ))}
           </div>

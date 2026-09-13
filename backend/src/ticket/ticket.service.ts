@@ -15,11 +15,13 @@ import { getPagination, paginated } from "../common/pagination";
 export class TicketService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async list(eventId: string, query: { page?: string; limit?: string } = {}) {
+  async list(eventId: string, user: AuthUser, query: { page?: string; limit?: string } = {}) {
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
     });
     if (!event) throw new NotFoundException("Event not found");
+    if (user.role !== "SUPER_ADMIN" && event.sellerId !== user.id)
+      throw new ForbiddenException("You do not own this event");
 
     const { page, limit, skip } = getPagination(query);
     const where = { eventId };
@@ -29,8 +31,10 @@ export class TicketService {
       skip, take: limit,
       select: {
         id: true,
+        name: true,
+        description: true,
+        price: true,
         status: true,
-        note: true,
         createdAt: true,
       },
       orderBy: { id: "asc" },
@@ -52,8 +56,10 @@ export class TicketService {
       await tx.ticket.createMany({
         data: Array.from({ length: dto.quantity }, (_, index) => ({
           eventId,
+          name: dto.name,
+          description: dto.description,
+          price: dto.price,
           status: TicketStatus.AVAILABLE,
-          note: dto.note,
         })),
       });
 
@@ -87,9 +93,24 @@ export class TicketService {
     return this.prisma.ticket.update({
       where: { id },
       data: {
+        name: dto.name ?? ticket.name,
+        description: dto.description ?? ticket.description,
+        price: dto.price ?? ticket.price,
         status: dto.status ?? ticket.status,
-        note: dto.note ?? ticket.note,
       },
     });
+  }
+
+  async remove(id: string, user: AuthUser) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      include: { event: true },
+    });
+    if (!ticket) throw new NotFoundException("Ticket not found");
+    if (user.role !== "SUPER_ADMIN" && ticket.event.sellerId !== user.id)
+      throw new ForbiddenException("You do not own this ticket");
+    if (ticket.status !== TicketStatus.AVAILABLE || ticket.bookingId)
+      throw new BadRequestException("Booked or unavailable tickets cannot be deleted");
+    return this.prisma.ticket.delete({ where: { id } });
   }
 }

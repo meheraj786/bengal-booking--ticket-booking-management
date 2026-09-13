@@ -27,6 +27,23 @@ export class ApiError extends Error {
     this.statusCode = statusCode;
     this.fieldErrors = fieldErrors;
   }
+
+}
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 apiClient.interceptors.response.use(

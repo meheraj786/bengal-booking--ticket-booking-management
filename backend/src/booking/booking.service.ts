@@ -62,7 +62,10 @@ export class BookingService {
             userId,
             eventId,
             quantity,
-            totalAmount: new Prisma.Decimal(0),
+            totalAmount: candidates.reduce(
+              (total, ticket) => total.add(ticket.price),
+              new Prisma.Decimal(0),
+            ),
             ...buyer,
             expiresAt,
           },
@@ -162,6 +165,20 @@ export class BookingService {
     return paginated(data, total, page, limit);
   }
 
+  async listForSeller(sellerId: string, query: { page?: string; limit?: string } = {}) {
+    const { page, limit, skip } = getPagination(query);
+    const where = { event: { sellerId } };
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.booking.findMany({
+        where, skip, take: limit,
+        include: { event: true, tickets: true, payment: true, user: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.booking.count({ where }),
+    ]);
+    return paginated(data, total, page, limit);
+  }
+
   async listAll(query: { page?: string; limit?: string } = {}) {
     const { page, limit, skip } = getPagination(query);
     const [data, total] = await this.prisma.$transaction([
@@ -228,6 +245,67 @@ export class BookingService {
       this.prisma.booking.count({ where }),
     ]);
     return paginated(data, total, page, limit);
+  }
+
+  async updateStatus(id: string, status: BookingStatus, user: AuthUser) {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id },
+      include: { event: true, tickets: true },
+    });
+    if (!booking) throw new NotFoundException("Booking not found");
+    if (user.role !== "SUPER_ADMIN" && booking.event.sellerId !== user.id)
+      throw new ForbiddenException("You cannot update this booking");
+    if (status === BookingStatus.CANCELLED) return this.cancel(id, user);
+    if (status !== BookingStatus.CONFIRMED && status !== BookingStatus.EXPIRED)
+      throw new BadRequestException("Unsupported booking status update");
+    if (booking.status !== BookingStatus.PENDING)
+      throw new BadRequestException("Only pending bookings can be updated");
+    await this.prisma.$transaction(async (tx) => {
+      await tx.ticket.updateMany({
+        where: { bookingId: id, status: TicketStatus.LOCKED },
+        data: status === BookingStatus.CONFIRMED
+          ? { status: TicketStatus.SOLD }
+          : { status: TicketStatus.AVAILABLE, bookingId: null },
+      });
+      await tx.booking.update({ where: { id }, data: { status } });
+    });
+    if (status === BookingStatus.EXPIRED) {
+      await Promise.all(booking.tickets.map((ticket) => this.redis.releaseTicket(ticket.id, id)));
+    }
+    return this.prisma.booking.findUnique({ where: { id }, include: { tickets: true, payment: true } });
+  }
+
+  async cancel(id: string, user: AuthUser) {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id },
+      include: { event: true, tickets: true },
+    });
+    if (!booking) throw new NotFoundException("Booking not found");
+    const privileged = user.role === "SUPER_ADMIN" ||
+      (user.role === "SELLER" && booking.event.sellerId === user.id);
+    if (user.role === "USER" && booking.userId !== user.id)
+      throw new ForbiddenException("You cannot cancel this booking");
+    if (user.role === "SELLER" && !privileged)
+      throw new ForbiddenException("You cannot cancel this booking");
+    if (booking.status !== BookingStatus.PENDING && booking.status !== BookingStatus.CONFIRMED)
+      throw new BadRequestException("Booking cannot be cancelled");
+    if (!privileged && booking.event.lastDateAndTimeOfCancel &&
+        new Date() > booking.event.lastDateAndTimeOfCancel)
+      throw new BadRequestException("The cancellation deadline has passed");
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.ticket.updateMany({
+        where: { bookingId: id },
+        data: booking.status === BookingStatus.PENDING
+          ? { status: TicketStatus.AVAILABLE, bookingId: null }
+          : { status: TicketStatus.CANCELLED },
+      });
+      await tx.booking.update({ where: { id }, data: { status: BookingStatus.CANCELLED } });
+    });
+    if (booking.status === BookingStatus.PENDING) {
+      await Promise.all(booking.tickets.map((ticket) => this.redis.releaseTicket(ticket.id, id)));
+    }
+    return this.prisma.booking.findUnique({ where: { id }, include: { tickets: true, payment: true } });
   }
   async checkout(bookingId: string, userId: string) {
     const booking = await this.prisma.booking.findFirst({

@@ -31,7 +31,11 @@ export default function CategoriesPage() {
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: categories = [], isLoading, error } = useCategoryList();
+  const { data: categoryResult, isLoading, error } = useCategoryList({
+    page: pagination.page,
+    limit: pagination.pageSize,
+  });
+  const categories = categoryResult?.data ?? [];
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory(editingCategory?.id || "");
   const deleteCategory = useDeleteCategory();
@@ -166,7 +170,7 @@ export default function CategoriesPage() {
       <DataTable
         columns={columns}
         data={categories}
-        totalCount={categories.length}
+        totalCount={categoryResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
         onPaginationChange={setPagination}

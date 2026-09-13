@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type {
   Event,
   EventListFilters,
@@ -10,8 +10,8 @@ import type {
 } from "@/types/event.types";
 
 export const eventService = {
-  list: async (filters?: EventListFilters): Promise<Event[]> => {
-    const { data } = await apiClient.get<Event[]>("/events", {
+  list: async (filters?: EventListFilters & PaginationParams): Promise<PaginatedResponse<Event>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Event>>("/events", {
       params: filters,
     });
     return data;

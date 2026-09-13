@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { CategoryDto } from "./category.dto";
 import { paginated } from "../common/pagination";
+import { slugify } from "../common/slugify";
 
 interface CategoryFilters {
   limit?: string | number;
@@ -48,12 +49,17 @@ export class CategoryService {
   }
 
   create(dto: CategoryDto) {
-    return this.prisma.category.create({ data: dto });
+    return this.prisma.category.create({
+      data: { ...dto, slug: slugify(dto.name) },
+    });
   }
 
   async update(id: string, dto: CategoryDto) {
     await this.ensure(id);
-    return this.prisma.category.update({ where: { id }, data: dto });
+    return this.prisma.category.update({
+      where: { id },
+      data: { ...dto, slug: slugify(dto.name ?? dto.slug) },
+    });
   }
 
   async remove(id: string) {

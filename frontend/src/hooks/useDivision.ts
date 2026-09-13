@@ -6,6 +6,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { ApiError } from "@/lib/api-client";
+import type { PaginatedResponse, PaginationParams } from "@/lib/api-client";
 import { divisionService } from "@/services/division.service";
 import type {
   CreateDivisionPayload,
@@ -19,10 +20,10 @@ export const divisionKeys = {
   detail: (id: string) => [...divisionKeys.all, "detail", id] as const,
 };
 
-export function useDivisionList(): UseQueryResult<Division[], ApiError> {
+export function useDivisionList(params?: PaginationParams): UseQueryResult<PaginatedResponse<Division>, ApiError> {
   return useQuery({
-    queryKey: divisionKeys.list(),
-    queryFn: divisionService.list,
+    queryKey: [...divisionKeys.list(), params],
+    queryFn: () => divisionService.list(params),
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -35,8 +36,9 @@ export function useCreateDivision(): UseMutationResult<
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: divisionService.create,
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: divisionKeys.list() });
+      queryClient.invalidateQueries({ queryKey: divisionKeys.detail(id) });
     },
   });
 }
@@ -61,7 +63,7 @@ export function useDeleteDivision(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: divisionService.delete,
+    mutationFn: (id) => divisionService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: divisionKeys.list() });
     },

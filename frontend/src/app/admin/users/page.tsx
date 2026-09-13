@@ -29,7 +29,11 @@ export default function UsersPage() {
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
-  const { data: users = [], isLoading, error } = useUserList();
+  const { data: userResult, isLoading, error } = useUserList({
+    page: pagination.page,
+    limit: pagination.pageSize,
+  });
+  const users = userResult?.data ?? [];
   const updateRole = useUpdateUserRole();
   const updateStatus = useUpdateUserStatus();
 
@@ -183,7 +187,7 @@ export default function UsersPage() {
       <DataTable
         columns={columns}
         data={users}
-        totalCount={users.length}
+        totalCount={userResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
         onPaginationChange={setPagination}

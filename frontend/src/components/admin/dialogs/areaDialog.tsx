@@ -29,6 +29,7 @@ import {
 import { areaFormSchema, type AreaFormInput } from "@/lib/validators";
 import type { Area } from "@/types/area.types";
 import type { Division } from "@/types/division.types";
+import { slugify } from "@/lib/slugify";
 
 interface AreaDialogProps {
   open: boolean;
@@ -75,12 +76,7 @@ export function AreaDialog({
   const handleNameChange = (value: string) => {
     form.setValue("name", value);
     if (!form.getValues("slug") || area === undefined) {
-      const slug = value
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, "-")
-        .replace(/[^\w-]/g, "");
-      form.setValue("slug", slug);
+      form.setValue("slug", slugify(value));
     }
   };
 

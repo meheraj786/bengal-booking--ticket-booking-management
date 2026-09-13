@@ -6,13 +6,14 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { ticketService } from "@/services/ticket.service";
-import { ApiError } from "@/lib/api-client";
+import { ApiError, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type {
   Ticket,
   CreateTicketPayload,
   UpdateTicketPayload,
   CreateTicketsResponse,
 } from "@/types/ticket.types";
+import { eventKeys } from "@/hooks/useEvent";
 
 export const ticketKeys = {
   all: ["tickets"] as const,
@@ -21,12 +22,26 @@ export const ticketKeys = {
 
 export function useTicketList(
   eventId: string,
-): UseQueryResult<Ticket[], ApiError> {
+  params?: PaginationParams,
+): UseQueryResult<PaginatedResponse<Ticket>, ApiError> {
   return useQuery({
-    queryKey: ticketKeys.list(eventId),
-    queryFn: () => ticketService.list(eventId),
+    queryKey: [...ticketKeys.list(eventId), params],
+    queryFn: () => ticketService.list(eventId, params),
     staleTime: 2 * 60 * 1000,
     enabled: !!eventId,
+  });
+}
+
+export function useDeleteTicket(eventId: string): UseMutationResult<Ticket, ApiError, string> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ticketId) => ticketService.delete(eventId, ticketId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ticketKeys.list(eventId) });
+      queryClient.invalidateQueries({ queryKey: ["sellerTickets", "list", eventId] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+    },
   });
 }
 
@@ -38,6 +53,9 @@ export function useCreateTickets(
     mutationFn: (payload) => ticketService.create(eventId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ticketKeys.list(eventId) });
+      queryClient.invalidateQueries({ queryKey: ["sellerTickets", "list", eventId] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
     },
   });
 }
@@ -51,6 +69,9 @@ export function useUpdateTicket(
     mutationFn: (payload) => ticketService.update(eventId, ticketId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ticketKeys.list(eventId) });
+      queryClient.invalidateQueries({ queryKey: ["sellerTickets", "list", eventId] });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
     },
   });
 }

@@ -41,9 +41,10 @@ export default function CreateSellerEventPage() {
       venueAddress: "",
       startAt: "",
       endAt: "",
-      totalTickets: 0,
       maxTicketsPerBooking: 5,
-      price: 0,
+      lastDateAndTimeOfCancel: "",
+      lastDateOfBooking: "",
+      paymentType: "Free",
       coverImage: "",
     },
   });
@@ -254,32 +255,7 @@ export default function CreateSellerEventPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <Controller
-                  name="totalTickets"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="totalTickets">
-                        Total Tickets
-                      </FieldLabel>
-                      <Input
-                        {...field}
-                        type="number"
-                        id="totalTickets"
-                        placeholder="100"
-                        onChange={(e) =>
-                          field.onChange(parseInt(e.target.value) || 0)
-                        }
-                        disabled={createEvent.isPending}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-
+              <div className="grid grid-cols-2 gap-4">
                 <Controller
                   name="maxTicketsPerBooking"
                   control={form.control}
@@ -306,28 +282,40 @@ export default function CreateSellerEventPage() {
                 />
 
                 <Controller
-                  name="price"
+                  name="paymentType"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="price">Price (৳)</FieldLabel>
-                      <Input
-                        {...field}
-                        type="number"
-                        step="0.01"
-                        id="price"
-                        placeholder="0.00"
-                        onChange={(e) =>
-                          field.onChange(parseFloat(e.target.value) || 0)
-                        }
-                        disabled={createEvent.isPending}
-                      />
+                      <FieldLabel>Payment Type</FieldLabel>
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Advance">Advance</SelectItem>
+                          <SelectItem value="OnArrival">On Arrival</SelectItem>
+                          <SelectItem value="Free">Free</SelectItem>
+                        </SelectContent>
+                      </Select>
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
                       )}
                     </Field>
                   )}
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Controller name="lastDateOfBooking" control={form.control} render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}><FieldLabel htmlFor="lastDateOfBooking">Last Date of Booking</FieldLabel>
+                    <Input {...field} type="datetime-local" id="lastDateOfBooking" disabled={createEvent.isPending} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )} />
+                <Controller name="lastDateAndTimeOfCancel" control={form.control} render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}><FieldLabel htmlFor="lastDateAndTimeOfCancel">Last Date and Time of Cancellation</FieldLabel>
+                    <Input {...field} type="datetime-local" id="lastDateAndTimeOfCancel" disabled={createEvent.isPending} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )} />
               </div>
 
               <Controller

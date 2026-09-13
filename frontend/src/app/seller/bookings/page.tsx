@@ -19,8 +19,10 @@ export default function SellerBookingsPage() {
   });
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
-  const { data: events = [] } = useSellerEventList();
-  const { data: bookings = [] } = useSellerEventBookings(selectedEventId || "");
+  const { data: eventResult } = useSellerEventList();
+  const events = eventResult?.data ?? [];
+  const { data: bookingResult } = useSellerEventBookings(selectedEventId || "", pagination);
+  const bookings = bookingResult?.data ?? [];
 
   const columns: ColumnDef<Booking>[] = [
     {
@@ -123,7 +125,7 @@ export default function SellerBookingsPage() {
       <DataTable
         columns={columns}
         data={selectedEventId ? bookings : bookings}
-        totalCount={bookings.length}
+        totalCount={bookingResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
         onPaginationChange={setPagination}

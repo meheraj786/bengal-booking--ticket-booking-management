@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { sellerService } from "@/services/seller.service";
-import { ApiError } from "@/lib/api-client";
+import { ApiError, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type { Booking } from "@/types/booking.types";
 
 export const sellerBookingKeys = {
@@ -11,10 +11,11 @@ export const sellerBookingKeys = {
 
 export function useSellerEventBookings(
   eventId: string,
-): UseQueryResult<Booking[], ApiError> {
+  params?: PaginationParams,
+): UseQueryResult<PaginatedResponse<Booking>, ApiError> {
   return useQuery({
-    queryKey: sellerBookingKeys.list(eventId),
-    queryFn: () => sellerService.getEventBookings(eventId),
+    queryKey: [...sellerBookingKeys.list(eventId), params],
+    queryFn: () => sellerService.getEventBookings(eventId, params),
     staleTime: 2 * 60 * 1000,
     enabled: !!eventId,
   });

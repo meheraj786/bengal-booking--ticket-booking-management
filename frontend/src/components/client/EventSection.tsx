@@ -8,7 +8,8 @@ import { EventCard } from "./EventCard";
 import type { Event } from "@/types/event.types";
 
 export default function EventSection() {
-  const { data: events, isLoading, isError } = useEventList();
+  const { data: eventResult, isLoading, isError } = useEventList();
+  const events = eventResult?.data ?? [];
 
   return (
     <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
@@ -82,7 +83,7 @@ export default function EventSection() {
       {!isLoading && !isError && events && events.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {events.map((event: Event) => {
-            const isFree = parseFloat(event.price) === 0;
+            const isFree = event.paymentType === "Free";
 
             return (
               <div

@@ -104,6 +104,13 @@ export class EventService {
     return event;
   }
 
+  async getSellerEvent(id: string, user: AuthUser) {
+    const event = await this.get(id);
+    if (user.role !== "SUPER_ADMIN" && event.sellerId !== user.id)
+      throw new ForbiddenException("You do not own this event");
+    return event;
+  }
+
   create(dto: CreateEventDto, user: AuthUser) {
     return this.prisma.event.create({
       data: {
@@ -182,12 +189,12 @@ export class EventService {
     });
   }
 
-  async getSellerEvents(sellerId: string, query: { page?: string; limit?: string } = {}) {
+  async getSellerEvents(user: AuthUser, query: { page?: string; limit?: string } = {}) {
     const { page, limit, skip } = getPagination(query);
-    const where = { sellerId };
+    const where = user.role === "SUPER_ADMIN" ? {} : { sellerId: user.id };
     const [data, total] = await this.prisma.$transaction([
       this.prisma.event.findMany({
-      where: { sellerId },
+      where,
       skip,
       take: limit,
       include: {

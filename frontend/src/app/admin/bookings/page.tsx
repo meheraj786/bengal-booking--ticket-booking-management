@@ -17,7 +17,8 @@ export default function BookingsPage() {
     pageSize: 10,
   });
 
-  const { data: bookings = [], isLoading, error } = useBookingList();
+  const { data: bookingResult, isLoading, error } = useBookingList();
+  const bookings = bookingResult?.data ?? [];
 
   const columns: ColumnDef<Booking>[] = [
     {
@@ -102,7 +103,7 @@ export default function BookingsPage() {
       <DataTable
         columns={columns}
         data={bookings}
-        totalCount={bookings.length}
+        totalCount={bookingResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
         onPaginationChange={setPagination}

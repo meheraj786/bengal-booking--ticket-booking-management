@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -30,7 +31,7 @@ export class TicketController {
     @Query("page") page?: string,
     @Query("limit") limit?: string,
   ) {
-    return this.service.list(eventId, { page, limit });
+    return this.service.list(eventId, user, { page, limit });
   }
 
   @Post()
@@ -53,5 +54,12 @@ export class TicketController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.update(id, dto, user);
+  }
+
+  @Delete(":id")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.SUPER_ADMIN)
+  remove(@Param("id") id: string, @CurrentUser() user: AuthUser) {
+    return this.service.remove(id, user);
   }
 }

@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type {
   Area,
   CreateAreaPayload,
@@ -6,8 +6,8 @@ import type {
 } from "@/types/area.types";
 
 export const areaService = {
-  list: async (): Promise<Area[]> => {
-    const { data } = await apiClient.get<Area[]>("/areas");
+  list: async (params?: PaginationParams): Promise<PaginatedResponse<Area>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Area>>("/areas", { params });
     return data;
   },
 

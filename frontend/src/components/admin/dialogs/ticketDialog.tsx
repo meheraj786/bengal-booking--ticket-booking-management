@@ -44,14 +44,18 @@ export function TicketDialog({
     resolver: zodResolver(ticketFormSchema),
     defaultValues: {
       quantity: 1,
-      note: "",
+      name: "",
+      description: "",
+      price: 0,
     },
   });
 
   useEffect(() => {
     form.reset({
       quantity: 1,
-      note: "",
+      name: "",
+      description: "",
+      price: 0,
     });
   }, [form, open]);
 
@@ -99,18 +103,65 @@ export function TicketDialog({
             />
 
             <Controller
-              name="note"
+              name="name"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="ticket-note">Note (optional)</FieldLabel>
+                  <FieldLabel htmlFor="ticket-name">Ticket name</FieldLabel>
+                  <Input
+                    {...field}
+                    id="ticket-name"
+                    placeholder="VIP Admission"
+                    disabled={isLoading}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="ticket-description">
+                    Description
+                  </FieldLabel>
                   <Textarea
                     {...field}
-                    id="ticket-note"
-                    placeholder="Any special notes about these tickets..."
+                    id="ticket-description"
+                    placeholder="Describe what this ticket includes..."
                     disabled={isLoading}
                     rows={3}
                     aria-invalid={fieldState.invalid}
+                  />
+
+                  <Controller
+                    name="price"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="ticket-price">Price</FieldLabel>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          id="ticket-price"
+                          placeholder="0.00"
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          disabled={isLoading}
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <FieldDescription>Price per ticket</FieldDescription>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />

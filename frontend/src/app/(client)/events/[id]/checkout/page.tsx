@@ -55,7 +55,7 @@ export default function CheckoutPage() {
       );
     } else {
       checkout.mutate(
-        { bookingId, paymentMethod: selectedPayment },
+        { bookingId },
         {
           onSuccess: (data) => {
             if (data.paymentUrl) {

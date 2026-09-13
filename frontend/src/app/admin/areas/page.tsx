@@ -28,8 +28,13 @@ export default function AreasPage() {
   const [deletingAreaId, setDeletingAreaId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: areas = [], isLoading, error } = useAreaList();
-  const { data: divisions = [] } = useDivisionList();
+  const { data: areaResult, isLoading, error } = useAreaList({
+    page: pagination.page,
+    limit: pagination.pageSize,
+  });
+  const areas = areaResult?.data ?? [];
+  const { data: divisionResult } = useDivisionList({ page: 1, limit: 100 });
+  const divisions = divisionResult?.data ?? [];
   const createArea = useCreateArea();
   const updateArea = useUpdateArea(editingArea?.id || "");
   const deleteArea = useDeleteArea();
@@ -152,7 +157,7 @@ export default function AreasPage() {
       <DataTable
         columns={columns}
         data={areas}
-        totalCount={areas.length}
+        totalCount={areaResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
         onPaginationChange={setPagination}

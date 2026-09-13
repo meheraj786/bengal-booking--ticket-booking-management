@@ -8,7 +8,8 @@ import { useAuthStore } from "@/hooks/useAuthStore";
 
 export default function SellerDashboard() {
   const { user } = useAuthStore();
-  const { data: events = [], isLoading } = useSellerEventList();
+  const { data: eventResult, isLoading } = useSellerEventList();
+  const events = eventResult?.data ?? [];
 
   const activeEvents = events.filter((e) => e.status === "PUBLISHED");
   const draftEvents = events.filter((e) => e.status === "DRAFT");
@@ -16,11 +17,7 @@ export default function SellerDashboard() {
     (sum, e) => sum + (e._count?.bookings || 0),
     0,
   );
-  const totalRevenue = events.reduce((sum, e) => {
-    const amount =
-      parseFloat(e.price as unknown as string) * (e._count?.bookings || 0);
-    return sum + amount;
-  }, 0);
+  const freeEvents = events.filter((event) => event.paymentType === "Free");
 
   return (
     <div className="space-y-8">
@@ -69,12 +66,12 @@ export default function SellerDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Revenue
+              Free Events
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">৳{totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-gray-500">Total earnings</p>
+            <div className="text-2xl font-bold">{freeEvents.length}</div>
+            <p className="text-xs text-gray-500">No payment required</p>
           </CardContent>
         </Card>
       </div>

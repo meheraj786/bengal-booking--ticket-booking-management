@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { eventService } from "@/services/event.service";
 import { ApiError } from "@/lib/api-client";
+import type { PaginatedResponse, PaginationParams } from "@/lib/api-client";
 import type {
   Event,
   EventListFilters,
@@ -14,6 +15,7 @@ import type {
   CreateEventPayload,
   UpdateEventPayload,
 } from "@/types/event.types";
+import { queryKeys } from "@/lib/query-keys";
 
 export const eventKeys = {
   all: ["events"] as const,
@@ -25,7 +27,7 @@ export const eventKeys = {
 
 export function useEventList(
   filters?: EventListFilters,
-): UseQueryResult<Event[], ApiError> {
+): UseQueryResult<PaginatedResponse<Event>, ApiError> {
   return useQuery({
     queryKey: eventKeys.list(filters),
     queryFn: () => eventService.list(filters),
@@ -62,6 +64,10 @@ export function useCreateEvent(): UseMutationResult<
     mutationFn: eventService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
+      queryClient.invalidateQueries({ queryKey: ["sellerEvents"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sellerDashboard });
     },
   });
 }
@@ -75,6 +81,11 @@ export function useUpdateEvent(
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
+      queryClient.invalidateQueries({ queryKey: ["sellerEvents", "detail", id] });
+      queryClient.invalidateQueries({ queryKey: ["sellerEvents"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sellerDashboard });
     },
   });
 }
@@ -88,6 +99,11 @@ export function usePublishEvent(
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
+      queryClient.invalidateQueries({ queryKey: ["sellerEvents", "detail", id] });
+      queryClient.invalidateQueries({ queryKey: ["sellerEvents"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sellerDashboard });
     },
   });
 }
@@ -96,8 +112,14 @@ export function useDeleteEvent(): UseMutationResult<Event, ApiError, string> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id) => eventService.delete(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
+      queryClient.invalidateQueries({ queryKey: ["sellerEvents", "detail", id] });
+      queryClient.invalidateQueries({ queryKey: ["sellerEvents"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.adminDashboard });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sellerDashboard });
     },
   });
 }

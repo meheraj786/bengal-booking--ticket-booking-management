@@ -7,11 +7,13 @@ import {
 } from "@tanstack/react-query";
 import { areaService } from "@/services/area.service";
 import { ApiError } from "@/lib/api-client";
+import type { PaginatedResponse, PaginationParams } from "@/lib/api-client";
 import type {
   Area,
   CreateAreaPayload,
   UpdateAreaPayload,
 } from "@/types/area.types";
+import { eventKeys } from "@/hooks/useEvent";
 
 export const areaKeys = {
   all: ["areas"] as const,
@@ -19,10 +21,10 @@ export const areaKeys = {
   detail: (id: string) => [...areaKeys.all, "detail", id] as const,
 };
 
-export function useAreaList(): UseQueryResult<Area[], ApiError> {
+export function useAreaList(params?: PaginationParams): UseQueryResult<PaginatedResponse<Area>, ApiError> {
   return useQuery({
-    queryKey: areaKeys.list(),
-    queryFn: areaService.list,
+    queryKey: [...areaKeys.list(), params],
+    queryFn: () => areaService.list(params),
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -37,6 +39,8 @@ export function useCreateArea(): UseMutationResult<
     mutationFn: areaService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: areaKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });
 }
@@ -50,6 +54,8 @@ export function useUpdateArea(
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: areaKeys.list() });
       queryClient.invalidateQueries({ queryKey: areaKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });
 }
@@ -62,8 +68,11 @@ export function useDeleteArea(): UseMutationResult<
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id) => areaService.delete(id),
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: areaKeys.list() });
+      queryClient.invalidateQueries({ queryKey: areaKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: eventKeys.list() });
+      queryClient.invalidateQueries({ queryKey: eventKeys.filters() });
     },
   });
 }

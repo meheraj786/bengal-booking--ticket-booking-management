@@ -18,14 +18,17 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Booking } from "@/types/booking.types";
+import { bookingService } from "@/services/booking.service";
 
 export default function BookingsPage() {
   const router = useRouter();
   const { user, isLoading: userLoading } = useAuthStore();
-  const { data: bookings = [], isLoading } = useBookingList();
+  const { data: bookingResult, isLoading } = useBookingList();
+  const bookings = bookingResult?.data ?? [];
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(
     bookings.length === 1 ? bookings[0]?.id : null,
   );
+  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(null);
 
   if (userLoading) {
     return (
@@ -84,6 +87,15 @@ export default function BookingsPage() {
   };
 
   const renderBooking = (booking: Booking) => {
+    const cancelBooking = async () => {
+      setCancellingBookingId(booking.id);
+      try {
+        await bookingService.cancel(booking.id);
+        router.refresh();
+      } finally {
+        setCancellingBookingId(null);
+      }
+    };
     const StatusIcon = statusColors[booking.status]?.icon;
     const isExpanded = expandedBookingId === booking.id;
 
@@ -159,6 +171,11 @@ export default function BookingsPage() {
                     {booking.tickets.length} ticket
                     {booking.tickets.length > 1 ? "s" : ""}
                   </span>
+                )}
+                {(booking.status === "PENDING" || booking.status === "CONFIRMED") && (
+                  <Button variant="destructive" className="w-full mt-3" disabled={cancellingBookingId === booking.id} onClick={(event) => { event.stopPropagation(); void cancelBooking(); }}>
+                    {cancellingBookingId === booking.id ? "Cancelling..." : "Cancel booking"}
+                  </Button>
                 )}
                 <ChevronDown
                   className={`w-4 h-4 text-gray-500 transition-transform ${

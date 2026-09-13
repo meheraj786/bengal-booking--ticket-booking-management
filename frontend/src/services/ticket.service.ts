@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type {
   Ticket,
   CreateTicketPayload,
@@ -7,9 +7,10 @@ import type {
 } from "@/types/ticket.types";
 
 export const ticketService = {
-  list: async (eventId: string): Promise<Ticket[]> => {
-    const { data } = await apiClient.get<Ticket[]>(
+  list: async (eventId: string, params?: PaginationParams): Promise<PaginatedResponse<Ticket>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Ticket>>(
       `/events/${eventId}/tickets`,
+      { params },
     );
     return data;
   },
@@ -34,6 +35,10 @@ export const ticketService = {
       `/events/${eventId}/tickets/${ticketId}`,
       payload,
     );
+    return data;
+  },
+  delete: async (eventId: string, ticketId: string): Promise<Ticket> => {
+    const { data } = await apiClient.delete<Ticket>(`/events/${eventId}/tickets/${ticketId}`);
     return data;
   },
 };

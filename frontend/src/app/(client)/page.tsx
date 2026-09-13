@@ -25,11 +25,12 @@ export default function Home() {
   const [selectedArea, setSelectedArea] = useState<string | undefined>();
 
   const { data: filters, isLoading: isFiltersLoading } = useEventFilters();
-  const { data: events = [], isLoading: isEventsLoading } = useEventList({
+  const { data: eventResponse, isLoading: isEventsLoading } = useEventList({
     search: searchQuery || undefined,
     category: selectedCategory,
     area: selectedArea,
   });
+  const events = eventResponse?.data ?? [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

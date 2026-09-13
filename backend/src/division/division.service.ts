@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { DivisionDto, UpdateDivisionDto } from "./division.dto";
 import { getPagination, paginated } from "../common/pagination";
+import { slugify } from "../common/slugify";
 
 @Injectable()
 export class DivisionService {
@@ -36,7 +37,7 @@ export class DivisionService {
 
   create(dto: DivisionDto) {
     return this.prisma.division.create({
-      data: dto,
+      data: { ...dto, slug: slugify(dto.name) },
       include: { areas: true },
     });
   }
@@ -45,7 +46,10 @@ export class DivisionService {
     await this.ensure(id);
     return this.prisma.division.update({
       where: { id },
-      data: dto,
+      data: {
+        ...dto,
+        slug: dto.name || dto.slug ? slugify(dto.name ?? dto.slug!) : undefined,
+      },
       include: { areas: true },
     });
   }

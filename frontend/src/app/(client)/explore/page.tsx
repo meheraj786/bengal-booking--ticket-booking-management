@@ -137,7 +137,7 @@ function ExplorePageContent() {
   };
 
   const { data: filters } = useEventFilters();
-  const { data: events = [], isLoading } = useEventList({
+  const { data: eventResult, isLoading } = useEventList({
     category: selectedCategories.length
       ? selectedCategories.join(",")
       : undefined,
@@ -148,6 +148,7 @@ function ExplorePageContent() {
     startDate: startDate ? startDate.toISOString() : undefined,
     endDate: endDate ? endDate.toISOString() : undefined,
   });
+  const events = eventResult?.data ?? [];
 
   const filteredCategories = useMemo(() => {
     if (!filters?.categories) return [];
@@ -328,8 +329,11 @@ function ExplorePageContent() {
         </div>
         <Slider
           value={priceRange}
-          onValueChange={(val) => setPriceRange([val[0], val[1]])}
-          onValueCommit={(val) =>
+          onValueChange={(val) => {
+            if (Array.isArray(val)) setPriceRange([val[0], val[1]]);
+          }}
+          onValueCommitted={(val) =>
+            Array.isArray(val) &&
             updateUrl({
               minPrice: val[0] > 0 ? String(val[0]) : undefined,
               maxPrice: val[1] < MAX_PRICE_LIMIT ? String(val[1]) : undefined,
@@ -361,12 +365,12 @@ function ExplorePageContent() {
           <SelectTrigger className="w-full bg-white border-slate-200 rounded-xl text-xs font-medium text-slate-800">
             <SelectValue placeholder="All locations" />
           </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-200">
-            <SelectItem value="all" className="text-xs">
+          <SelectContent>
+            <SelectItem value="all">
               All locations
             </SelectItem>
             {filters?.areas?.map((area) => (
-              <SelectItem key={area.id} value={area.slug} className="text-xs">
+              <SelectItem key={area.id} value={area.slug}>
                 {area.name}
               </SelectItem>
             ))}
@@ -386,14 +390,14 @@ function ExplorePageContent() {
           <SelectTrigger className="w-full bg-white border-slate-200 rounded-xl text-xs font-medium text-slate-800">
             <SelectValue placeholder="Popularity" />
           </SelectTrigger>
-          <SelectContent className="rounded-xl border-slate-200">
-            <SelectItem value="popularity" className="text-xs">
+          <SelectContent>
+            <SelectItem value="popularity">
               Popularity
             </SelectItem>
-            <SelectItem value="soonest" className="text-xs">
+            <SelectItem value="soonest">
               Soonest first
             </SelectItem>
-            <SelectItem value="price-low" className="text-xs">
+            <SelectItem value="price-low">
               Price: Low to high
             </SelectItem>
           </SelectContent>

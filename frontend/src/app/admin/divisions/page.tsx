@@ -27,7 +27,11 @@ export default function DivisionsPage() {
     null,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { data: divisions = [], isLoading, error } = useDivisionList();
+  const { data: divisionResult, isLoading, error } = useDivisionList({
+    page: pagination.page,
+    limit: pagination.pageSize,
+  });
+  const divisions = divisionResult?.data ?? [];
   const createDivision = useCreateDivision();
   const updateDivision = useUpdateDivision(editingDivision?.id || "");
   const deleteDivision = useDeleteDivision();
@@ -140,7 +144,7 @@ export default function DivisionsPage() {
       <DataTable
         columns={columns}
         data={divisions}
-        totalCount={divisions.length}
+        totalCount={divisionResult?.pagination.total ?? 0}
         currentPage={pagination.page}
         pageSize={pagination.pageSize}
         onPaginationChange={setPagination}

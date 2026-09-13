@@ -10,9 +10,7 @@ import type { Event } from "@/types/event.types";
 export function EventCard({ event }: { event: Event }) {
   const [isLiked, setIsLiked] = useState(false);
 
-  const numericPrice = parseFloat(event.price) || 0;
-  const isFree = numericPrice === 0;
-  const ticketsLeft = event.totalTickets - event.soldTickets;
+  const isFree = event.paymentType === "Free";
 
   const formattedDate = event.startAt
     ? format(new Date(event.startAt), "EEE, MMM d · h:mm a").toUpperCase()
@@ -96,12 +94,6 @@ export function EventCard({ event }: { event: Event }) {
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 380px"
         />
 
-        {ticketsLeft > 0 && ticketsLeft <= 20 && (
-          <div className="absolute top-3 left-3 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold text-white shadow-sm">
-            Only {ticketsLeft} tickets left
-          </div>
-        )}
-
         <button
           type="button"
           onClick={handleLikeClick}
@@ -124,9 +116,9 @@ export function EventCard({ event }: { event: Event }) {
 
           <div className="text-right shrink-0">
             <span className="text-base font-bold text-[#141738]">
-              ${numericPrice.toLocaleString()}
+              {event.paymentType}
             </span>
-            <span className="block text-[10px] text-slate-400">From</span>
+            <span className="block text-[10px] text-slate-400">Payment</span>
           </div>
         </div>
 

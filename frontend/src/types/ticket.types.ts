@@ -3,9 +3,10 @@ export type TicketStatus = "AVAILABLE" | "LOCKED" | "SOLD" | "CANCELLED";
 export interface Ticket {
   id: string;
   eventId: string;
-  ticketNumber: number;
+  name: string;
+  description: string;
+  price: string;
   status: TicketStatus;
-  note?: string;
   createdAt: string;
   updatedAt: string;
   bookingId?: string;
@@ -13,19 +14,24 @@ export interface Ticket {
 
 export interface CreateTicketPayload {
   quantity: number;
-  note?: string;
+  name: string;
+  description: string;
+  price: number;
 }
 
 export interface UpdateTicketPayload {
   status?: TicketStatus;
-  note?: string;
+  name?: string;
+  description?: string;
+  price?: number;
 }
 
 export interface CreateTicketsResponse {
   id: string;
   eventId: string;
-  ticketNumber: number;
+  name: string;
+  description: string;
+  price: string;
   status: TicketStatus;
-  note?: string;
   createdAt: string;
 }

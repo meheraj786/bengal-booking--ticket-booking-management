@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { divisionFormSchema, type DivisionFormInput } from "@/lib/validators";
 import type { Division } from "@/types/division.types";
+import { slugify } from "@/lib/slugify";
 
 interface DivisionDialogProps {
   open: boolean;
@@ -39,28 +40,21 @@ export function DivisionDialog({
 }: DivisionDialogProps) {
   const form = useForm<DivisionFormInput>({
     resolver: zodResolver(divisionFormSchema),
-    defaultValues: { name: "", slug: "" },
+    defaultValues: { name: "", slug: "", image: "" },
   });
 
   useEffect(() => {
     form.reset(
       division
-        ? { name: division.name, slug: division.slug }
-        : { name: "", slug: "" },
+        ? { name: division.name, slug: division.slug, image: division.image || "" }
+        : { name: "", slug: "", image: "" },
     );
   }, [division, form, open]);
 
   const handleNameChange = (value: string) => {
     form.setValue("name", value);
     if (!form.getValues("slug") || !division) {
-      form.setValue(
-        "slug",
-        value
-          .toLowerCase()
-          .trim()
-          .replace(/\s+/g, "-")
-          .replace(/[^\w-]/g, ""),
-      );
+      form.setValue("slug", slugify(value));
     }
   };
 
@@ -111,6 +105,18 @@ export function DivisionDialog({
                     placeholder="e.g., dhaka"
                     disabled={isLoading}
                     aria-invalid={fieldState.invalid}
+                  />
+                  <Controller
+                    name="image"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel htmlFor="division-image">Image URL</FieldLabel>
+                        <Input {...field} id="division-image" type="url" placeholder="https://..." disabled={isLoading} />
+                        <FieldDescription>Paste a public image URL for this division.</FieldDescription>
+                        {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      </Field>
+                    )}
                   />
                   <FieldDescription>
                     URL-friendly version of the name

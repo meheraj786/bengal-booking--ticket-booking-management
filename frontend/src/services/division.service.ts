@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type {
   CreateDivisionPayload,
   Division,
@@ -6,8 +6,8 @@ import type {
 } from "@/types/division.types";
 
 export const divisionService = {
-  list: async (): Promise<Division[]> => {
-    const { data } = await apiClient.get<Division[]>("/divisions");
+  list: async (params?: PaginationParams): Promise<PaginatedResponse<Division>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Division>>("/divisions", { params });
     return data;
   },
 

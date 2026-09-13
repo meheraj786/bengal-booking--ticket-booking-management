@@ -5,12 +5,13 @@ export type PaymentMethod = "FREE" | "SSLCOMMERZ" | "STRIPE";
 export interface Ticket {
   id: string;
   eventId: string;
-  ticketNumber: number;
+  name: string;
+  description: string;
+  price: string;
   status: TicketStatus;
   bookingId: string | null;
   createdAt: string;
   updatedAt: string;
-  note?: string;
 }
 
 export interface BookingEvent {
@@ -19,10 +20,11 @@ export interface BookingEvent {
   venueName: string;
   startAt: string;
   endAt: string;
+  maxTicketsPerBooking: number;
+  paymentType: "Advance" | "OnArrival" | "Free";
   price: string;
   totalTickets: number;
   soldTickets: number;
-  maxTicketsPerBooking: number;
 }
 
 export interface BookingPayment {
@@ -42,6 +44,9 @@ export interface Booking {
   eventId: string;
   quantity: number;
   totalAmount: string;
+  buyerName: string;
+  buyerAddress: string;
+  buyerPhone: string;
   status: BookingStatus;
   expiresAt: string | null;
   createdAt: string;
@@ -61,6 +66,9 @@ export interface Booking {
 export interface CreateBookingPayload {
   eventId: string;
   quantity: number;
+  buyerName: string;
+  buyerAddress: string;
+  buyerPhone: string;
 }
 
 export interface CreateBookingResponse {
@@ -71,7 +79,6 @@ export interface CreateBookingResponse {
 
 export interface CheckoutPayload {
   bookingId: string;
-  paymentMethod?: PaymentMethod;
 }
 
 export interface CheckoutResponse {

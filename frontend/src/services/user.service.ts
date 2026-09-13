@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type {
   User,
   UpdateUserRolePayload,
@@ -6,8 +6,8 @@ import type {
 } from "@/types/user.types";
 
 export const userService = {
-  list: async (): Promise<User[]> => {
-    const { data } = await apiClient.get<User[]>("/users");
+  list: async (params?: PaginationParams): Promise<PaginatedResponse<User>> => {
+    const { data } = await apiClient.get<PaginatedResponse<User>>("/users", { params });
     return data;
   },
 

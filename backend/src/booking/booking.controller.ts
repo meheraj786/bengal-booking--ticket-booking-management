@@ -8,6 +8,7 @@ import {
   Post,
   UseGuards,
   Query,
+  Patch,
 } from "@nestjs/common";
 import { Role } from "@prisma/client";
 import { BookingService } from "./booking.service";
@@ -15,6 +16,7 @@ import {
   CheckoutDto,
   ConfirmBookingDto,
   CreateBookingDto,
+  UpdateBookingDto,
 } from "./booking.dto";
 import { AuthUser, CurrentUser } from "../common/auth-user";
 import { JwtAuthGuard } from "../common/jwt-auth.guard";
@@ -29,7 +31,7 @@ export class BookingController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.USER, Role.SUPER_ADMIN)
+  @Roles(Role.USER, Role.SELLER, Role.SUPER_ADMIN)
   list(
     @CurrentUser() user: AuthUser,
     @Query("page") page?: string,
@@ -37,6 +39,9 @@ export class BookingController {
   ) {
     if (user.role === Role.SUPER_ADMIN) {
       return this.bookings.listAll({ page, limit });
+    }
+    if (user.role === Role.SELLER) {
+      return this.bookings.listForSeller(user.id, { page, limit });
     }
     return this.bookings.listForUser(user.id, { page, limit });
   }
@@ -58,6 +63,24 @@ export class BookingController {
   @Roles(Role.USER)
   get(@Param("bookingId") id: string, @CurrentUser() user: AuthUser) {
     return this.bookings.getForUser(id, user.id);
+  }
+
+  @Patch(":bookingId")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.SUPER_ADMIN)
+  update(
+    @Param("bookingId") bookingId: string,
+    @Body() dto: UpdateBookingDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.bookings.updateStatus(bookingId, dto.status, user);
+  }
+
+  @Post(":bookingId/cancel")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.USER, Role.SELLER, Role.SUPER_ADMIN)
+  cancel(@Param("bookingId") bookingId: string, @CurrentUser() user: AuthUser) {
+    return this.bookings.cancel(bookingId, user);
   }
 
   @Post()

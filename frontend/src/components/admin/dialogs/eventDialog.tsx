@@ -71,9 +71,10 @@ export function EventDialog({
       venueAddress: "",
       startAt: "",
       endAt: "",
-      totalTickets: 0,
       maxTicketsPerBooking: 5,
-      price: 0,
+      lastDateAndTimeOfCancel: "",
+      lastDateOfBooking: "",
+      paymentType: "Free",
       coverImage: "",
     },
   });
@@ -99,9 +100,14 @@ export function EventDialog({
         venueAddress: event.venueAddress,
         startAt: formatDateTime(event.startAt),
         endAt: formatDateTime(event.endAt),
-        totalTickets: event.totalTickets,
         maxTicketsPerBooking: event.maxTicketsPerBooking,
-        price: Number(event.price),
+        lastDateAndTimeOfCancel: event.lastDateAndTimeOfCancel
+          ? formatDateTime(event.lastDateAndTimeOfCancel)
+          : "",
+        lastDateOfBooking: event.lastDateOfBooking
+          ? formatDateTime(event.lastDateOfBooking)
+          : "",
+        paymentType: event.paymentType,
         coverImage: event.coverImage || "",
       });
     } else {
@@ -114,9 +120,10 @@ export function EventDialog({
         venueAddress: "",
         startAt: "",
         endAt: "",
-        totalTickets: 0,
         maxTicketsPerBooking: 5,
-        price: 0,
+        lastDateAndTimeOfCancel: "",
+        lastDateOfBooking: "",
+        paymentType: "Free",
         coverImage: "",
       });
     }
@@ -133,6 +140,8 @@ export function EventDialog({
       ...data,
       startAt: formatToISO(data.startAt),
       endAt: formatToISO(data.endAt),
+      lastDateAndTimeOfCancel: formatToISO(data.lastDateAndTimeOfCancel),
+      lastDateOfBooking: formatToISO(data.lastDateOfBooking),
     });
   });
 
@@ -419,30 +428,6 @@ export function EventDialog({
 
             <div className="grid grid-cols-3 gap-4">
               <Controller
-                name="totalTickets"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="event-tickets">
-                      Total Tickets
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      type="number"
-                      id="event-tickets"
-                      placeholder="100"
-                      onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      disabled={isLoading}
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-
-              <Controller
                 name="maxTicketsPerBooking"
                 control={form.control}
                 render={({ field, fieldState }) => (
@@ -467,29 +452,34 @@ export function EventDialog({
               />
 
               <Controller
-                name="price"
+                name="paymentType"
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="event-price">Price (৳)</FieldLabel>
-                    <Input
-                      {...field}
-                      type="number"
-                      step="0.01"
-                      id="event-price"
-                      placeholder="0.00"
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value))
-                      }
-                      disabled={isLoading}
-                      aria-invalid={fieldState.invalid}
-                    />
+                    <FieldLabel>Payment Type</FieldLabel>
+                    <select {...field} className="h-10 rounded-md border px-3" disabled={isLoading}>
+                      <option value="Free">Free</option>
+                      <option value="Advance">Advance</option>
+                      <option value="OnArrival">On arrival</option>
+                    </select>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
                 )}
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {(["lastDateOfBooking", "lastDateAndTimeOfCancel"] as const).map((name) => (
+                <Controller key={name} name={name} control={form.control} render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>{name === "lastDateOfBooking" ? "Last Date of Booking" : "Last Date & Time of Cancellation"}</FieldLabel>
+                    <Input {...field} type="datetime-local" disabled={isLoading} />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )} />
+              ))}
             </div>
 
             <Controller

@@ -33,13 +33,17 @@ export function BookingTicketCard({
             </div>
             <div className="flex-1">
               <p className="text-xs text-gray-500 mb-0.5">
-                Ticket #{ticket.ticketNumber}
+                Ticket #{ticket.id.slice(0, 8)}
               </p>
-              <p className="font-medium text-sm">{eventTitle}</p>
+              <p className="font-medium text-sm">{ticket.name}</p>
+              <p className="text-xs text-gray-600">{eventTitle}</p>
               <p className="text-xs text-gray-600">{eventDate}</p>
-              {ticket.note && (
-                <p className="text-xs text-gray-500 mt-1">{ticket.note}</p>
+              {ticket.description && (
+                <p className="text-xs text-gray-500 mt-1">{ticket.description}</p>
               )}
+              <p className="text-xs font-medium text-gray-700 mt-1">
+                ৳{Number(ticket.price).toLocaleString()} per ticket
+              </p>
             </div>
           </div>
           <div className="text-right flex-shrink-0">

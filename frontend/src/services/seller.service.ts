@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/api-client";
+import { apiClient, type PaginatedResponse, type PaginationParams } from "@/lib/api-client";
 import type {
   Event,
   CreateEventPayload,
@@ -9,13 +9,13 @@ import type { Booking } from "@/types/booking.types";
 
 export const sellerService = {
   // Events
-  getEvents: async (): Promise<Event[]> => {
-    const { data } = await apiClient.get<Event[]>("/events");
+  getEvents: async (params?: PaginationParams): Promise<PaginatedResponse<Event>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Event>>("/events/seller/mine", { params });
     return data;
   },
 
   getEvent: async (id: string): Promise<Event> => {
-    const { data } = await apiClient.get<Event>(`/events/${id}`);
+    const { data } = await apiClient.get<Event>(`/events/seller/${id}`);
     return data;
   },
 
@@ -43,9 +43,10 @@ export const sellerService = {
   },
 
   // Tickets
-  getEventTickets: async (eventId: string): Promise<Ticket[]> => {
-    const { data } = await apiClient.get<Ticket[]>(
+  getEventTickets: async (eventId: string, params?: PaginationParams): Promise<PaginatedResponse<Ticket>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Ticket>>(
       `/events/${eventId}/tickets`,
+      { params },
     );
     return data;
   },
@@ -64,7 +65,7 @@ export const sellerService = {
   updateTicket: async (
     eventId: string,
     ticketId: string,
-    payload: { status?: string; note?: string },
+    payload: { status?: string; name?: string; description?: string; price?: number },
   ): Promise<Ticket> => {
     const { data } = await apiClient.patch<Ticket>(
       `/events/${eventId}/tickets/${ticketId}`,
@@ -73,11 +74,13 @@ export const sellerService = {
     return data;
   },
 
-  // Bookings (read-only for seller's events)
-  getEventBookings: async (eventId: string): Promise<Booking[]> => {
-    // This endpoint doesn't exist yet, we'll need to add it to backend
-    // For now, we'll fetch all bookings and filter by event
-    const { data } = await apiClient.get<Booking[]>("/bookings");
-    return data.filter((b) => b.eventId === eventId);
+  getEventBookings: async (eventId: string, params?: PaginationParams): Promise<PaginatedResponse<Booking>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Booking>>(`/bookings/event/${eventId}`, { params });
+    return data;
+  },
+
+  deleteTicket: async (eventId: string, ticketId: string): Promise<Ticket> => {
+    const { data } = await apiClient.delete<Ticket>(`/events/${eventId}/tickets/${ticketId}`);
+    return data;
   },
 };
