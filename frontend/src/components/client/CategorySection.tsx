@@ -120,6 +120,7 @@ export default function CategorySection() {
                     (category as unknown as { eventCount?: number })
                       .eventCount ?? theme.defaultCount
                   }
+                  image={category.image ?? undefined}
                   bgGradient={theme.bgGradient}
                   icon={theme.icon}
                   iconColor={theme.iconColor}
