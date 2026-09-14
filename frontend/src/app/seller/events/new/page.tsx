@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { ImageUpload } from "@/components/image-upload";
 import {
   Popover,
   PopoverContent,
@@ -106,7 +107,10 @@ export default function CreateSellerEventPage() {
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor="category">Category</FieldLabel>
-                      <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+                      <Popover
+                        open={categoryOpen}
+                        onOpenChange={setCategoryOpen}
+                      >
                         <PopoverTrigger>
                           <Button
                             id="category"
@@ -133,7 +137,9 @@ export default function CreateSellerEventPage() {
                                     value={category.name}
                                     onSelect={() => {
                                       field.onChange(
-                                        field.value === category.id ? "" : category.id,
+                                        field.value === category.id
+                                          ? ""
+                                          : category.id,
                                       );
                                       setCategoryOpen(false);
                                     }}
@@ -376,8 +382,13 @@ export default function CreateSellerEventPage() {
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel>Payment Type</FieldLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Advance">Advance</SelectItem>
                           <SelectItem value="OnArrival">On Arrival</SelectItem>
@@ -393,18 +404,46 @@ export default function CreateSellerEventPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Controller name="lastDateOfBooking" control={form.control} render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}><FieldLabel htmlFor="lastDateOfBooking">Last Date of Booking</FieldLabel>
-                    <Input {...field} type="datetime-local" id="lastDateOfBooking" disabled={createEvent.isPending} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )} />
-                <Controller name="lastDateAndTimeOfCancel" control={form.control} render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}><FieldLabel htmlFor="lastDateAndTimeOfCancel">Last Date and Time of Cancellation</FieldLabel>
-                    <Input {...field} type="datetime-local" id="lastDateAndTimeOfCancel" disabled={createEvent.isPending} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )} />
+                <Controller
+                  name="lastDateOfBooking"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="lastDateOfBooking">
+                        Last Date of Booking
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        type="datetime-local"
+                        id="lastDateOfBooking"
+                        disabled={createEvent.isPending}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+                <Controller
+                  name="lastDateAndTimeOfCancel"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="lastDateAndTimeOfCancel">
+                        Last Date and Time of Cancellation
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        type="datetime-local"
+                        id="lastDateAndTimeOfCancel"
+                        disabled={createEvent.isPending}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
               </div>
 
               <Controller
@@ -412,18 +451,14 @@ export default function CreateSellerEventPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="coverImage">
-                      Cover Image URL
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      type="url"
-                      id="coverImage"
-                      placeholder="https://example.com/image.jpg"
+                    <FieldLabel htmlFor="coverImage">Cover Image</FieldLabel>
+                    <ImageUpload
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
                       disabled={createEvent.isPending}
                     />
                     <FieldDescription>
-                      Optional: Provide a cover image for your event
+                      Optional: Upload a cover image for your event
                     </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

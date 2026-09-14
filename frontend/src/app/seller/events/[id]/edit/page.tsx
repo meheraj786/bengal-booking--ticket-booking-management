@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUpload } from "@/components/image-upload";
 import { eventFormSchema, type EventFormInput } from "@/lib/validators";
 import { useEventFilters } from "@/hooks/useEvent";
 import { useSellerEvent, useUpdateSellerEvent } from "@/hooks/useSellerEvent";
@@ -318,8 +319,13 @@ export default function EditSellerEventPage() {
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel>Payment Type</FieldLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Advance">Advance</SelectItem>
                           <SelectItem value="OnArrival">On Arrival</SelectItem>
@@ -335,18 +341,46 @@ export default function EditSellerEventPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Controller name="lastDateOfBooking" control={form.control} render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}><FieldLabel htmlFor="lastDateOfBooking">Last Date of Booking</FieldLabel>
-                    <Input {...field} type="datetime-local" id="lastDateOfBooking" disabled={updateEvent.isPending} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )} />
-                <Controller name="lastDateAndTimeOfCancel" control={form.control} render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}><FieldLabel htmlFor="lastDateAndTimeOfCancel">Last Date and Time of Cancellation</FieldLabel>
-                    <Input {...field} type="datetime-local" id="lastDateAndTimeOfCancel" disabled={updateEvent.isPending} />
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                  </Field>
-                )} />
+                <Controller
+                  name="lastDateOfBooking"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="lastDateOfBooking">
+                        Last Date of Booking
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        type="datetime-local"
+                        id="lastDateOfBooking"
+                        disabled={updateEvent.isPending}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+                <Controller
+                  name="lastDateAndTimeOfCancel"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="lastDateAndTimeOfCancel">
+                        Last Date and Time of Cancellation
+                      </FieldLabel>
+                      <Input
+                        {...field}
+                        type="datetime-local"
+                        id="lastDateAndTimeOfCancel"
+                        disabled={updateEvent.isPending}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
               </div>
 
               <Controller
@@ -354,13 +388,10 @@ export default function EditSellerEventPage() {
                 control={form.control}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="coverImage">
-                      Cover Image URL
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      type="url"
-                      id="coverImage"
+                    <FieldLabel htmlFor="coverImage">Cover Image</FieldLabel>
+                    <ImageUpload
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
                       disabled={updateEvent.isPending}
                     />
                     <FieldDescription>
