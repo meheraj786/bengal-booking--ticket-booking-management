@@ -13,6 +13,7 @@ import {
   LogOut,
   Settings,
   LayoutDashboard,
+  MailCheck,
 } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { useLogout } from "@/hooks/use-auth";
@@ -136,7 +137,11 @@ export default function Navbar() {
                         {user.email}
                       </p>
                       <p className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-[#ff6849]">
-                        {user.role === "SUPER_ADMIN" ? "Administrator" : user.role === "SELLER" ? "Organizer" : "Attendee"}
+                        {user.role === "SUPER_ADMIN"
+                          ? "Administrator"
+                          : user.role === "SELLER"
+                            ? "Organizer"
+                            : "Attendee"}
                       </p>
                     </div>
 
@@ -168,6 +173,21 @@ export default function Navbar() {
                       </Link>
                     </DropdownMenuItem>
 
+                    {!user.isVerified && (
+                      <DropdownMenuItem
+                        asChild
+                        className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
+                      >
+                        <Link
+                          href="/verify-email"
+                          className="flex items-center gap-2"
+                        >
+                          <MailCheck className="h-4 w-4 text-[#ff6849]" />
+                          <span>Email Verify</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
                     {user.role === "SELLER" && (
                       <DropdownMenuItem
                         asChild
@@ -188,10 +208,7 @@ export default function Navbar() {
                         asChild
                         className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
                       >
-                        <Link
-                          href="/admin"
-                          className="flex items-center gap-2"
-                        >
+                        <Link href="/admin" className="flex items-center gap-2">
                           <LayoutDashboard className="h-4 w-4 text-[#ff6849]" />
                           <span>Admin Dashboard</span>
                         </Link>
@@ -202,10 +219,7 @@ export default function Navbar() {
                       asChild
                       className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
                     >
-                      <Link
-                        href="/setting"
-                        className="flex items-center gap-2"
-                      >
+                      <Link href="/setting" className="flex items-center gap-2">
                         <Settings className="h-4 w-4 text-slate-400" />
                         <span>Settings</span>
                       </Link>
@@ -280,6 +294,17 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          {user && !user.isVerified && (
+            <Link
+              href="/verify-email"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium !text-slate-200 bg-[#ff5236]/10 border border-[#ff5236]/30"
+            >
+              <MailCheck className="h-4 w-4 text-[#ff6849]" />
+              <span>Email Verify</span>
+            </Link>
+          )}
         </div>
       )}
     </header>
