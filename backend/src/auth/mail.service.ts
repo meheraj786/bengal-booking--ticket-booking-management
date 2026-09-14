@@ -22,11 +22,14 @@ export class MailService {
         ? nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: Number(process.env.SMTP_PORT ?? 587),
-            secure: true,
+            secure: Number(process.env.SMTP_PORT) === 465,
             auth: {
               user: process.env.SMTP_USER,
               pass: process.env.SMTP_PASSWORD,
             },
+            connectionTimeout: 15000,
+            greetingTimeout: 15000,
+            socketTimeout: 15000,
           })
         : null;
   }
@@ -41,14 +44,24 @@ export class MailService {
 
     const { html, text } = this.buildVerificationEmail(token, url);
 
-    await this.transporter.sendMail({
-      from:
-        process.env.MAIL_FROM ?? '"Bengal Booking" <no-reply@evently.local>',
-      to: email,
-      subject: "Verify your Bengal Booking email",
-      text,
-      html,
-    });
+    try {
+      await this.transporter.sendMail({
+        from:
+          process.env.MAIL_FROM ?? '"Bengal Booking" <no-reply@evently.local>',
+        to: email,
+        subject: "Verify your Bengal Booking email",
+        text,
+        html,
+      });
+    } catch (error) {
+      console.error(
+        `[MailService] Failed to send verification email to ${email}:`,
+        error,
+      );
+      console.info(
+        `[Bengal Booking] Fallback verification link for ${email}: ${url}`,
+      );
+    }
   }
 
   private buildVerificationEmail(otp: string, url: string) {
