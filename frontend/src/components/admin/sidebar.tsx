@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { authStore } from "@/store/auth.store";
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/categories", label: "Categories", icon: Grid3x3 },
   { href: "/admin/divisions", label: "Divisions", icon: Map },
@@ -61,7 +61,7 @@ export function AdminSidebar() {
         }`}
       >
         <div className="p-6 border-b border-gray-700">
-          <Link href="/admin/dashboard" className="flex items-center gap-2">
+          <Link href="/admin" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center font-bold">
               E
             </div>

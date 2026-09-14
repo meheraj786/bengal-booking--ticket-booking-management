@@ -6,6 +6,7 @@ import { ArrowRight, Search } from "lucide-react";
 import { useCategoryList } from "@/hooks/useCategory";
 import { CategoryCard } from "@/components/client/CategoryCard";
 import { Input } from "@/components/ui/input";
+import { log } from "console";
 
 const PAGE_SIZE = 12;
 
@@ -24,6 +25,8 @@ export default function CategoriesPage() {
     () => Array.from({ length: totalPages }, (_, index) => index + 1),
     [totalPages],
   );
+
+  console.log(categories);
 
   return (
     <main className="min-h-screen bg-[#fafafc]">
@@ -81,6 +84,7 @@ export default function CategoriesPage() {
                 key={category.id}
                 name={category.name}
                 slug={category.slug}
+                image={category.image ?? undefined}
                 count={category.eventCount ?? category._count?.events}
               />
             ))}

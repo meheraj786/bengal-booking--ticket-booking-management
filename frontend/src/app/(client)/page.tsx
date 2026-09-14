@@ -189,7 +189,7 @@ export default function Home() {
       <EventSection />
 
       {/* Statement Section */}
-      <section
+      {/* <section
         className="mx-auto grid w-[min(1180px,calc(100%-48px))] grid-cols-[70px_1fr_auto] items-center gap-5 py-[100px] max-md:w-[calc(100%-32px)] max-md:grid-cols-[45px_1fr] max-md:py-[72px]"
         id="about"
       >
@@ -204,8 +204,8 @@ export default function Home() {
           href="/explore"
         >
           Find your next thing <span>↗</span>
-        </Link>
-      </section>
+        </Link> */}
+      {/* </section> */}
     </main>
   );
 }

@@ -189,7 +189,7 @@ export default function Navbar() {
                         className="rounded-xl hover:bg-white/10 focus:bg-white/10 cursor-pointer !text-slate-200"
                       >
                         <Link
-                          href="/admin/dashboard"
+                          href="/admin"
                           className="flex items-center gap-2"
                         >
                           <LayoutDashboard className="h-4 w-4 text-[#ff6849]" />
