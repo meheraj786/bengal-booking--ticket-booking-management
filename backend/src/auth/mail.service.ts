@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import nodemailer, { Transporter } from "nodemailer";
 
 const COLORS = {
   lavender: "#EFEBFA",
@@ -14,30 +13,16 @@ const COLORS = {
 
 @Injectable()
 export class MailService {
-  private readonly transporter: Transporter | null;
+  private readonly apiKey: string | undefined;
 
   constructor() {
-    this.transporter =
-      process.env.SMTP_HOST && process.env.SMTP_USER
-        ? nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT ?? 587),
-            secure: Number(process.env.SMTP_PORT) === 465,
-            auth: {
-              user: process.env.SMTP_USER,
-              pass: process.env.SMTP_PASSWORD,
-            },
-            connectionTimeout: 15000,
-            greetingTimeout: 15000,
-            socketTimeout: 15000,
-          })
-        : null;
+    this.apiKey = process.env.BREVO_API_KEY;
   }
 
   async sendVerification(email: string, token: string) {
     const url = `${process.env.FRONTEND_URL ?? "http://localhost:3000"}/verify-email?token=${token}`;
 
-    if (!this.transporter) {
+    if (!this.apiKey) {
       console.info(`[Bengal Booking] Verification link for ${email}: ${url}`);
       return;
     }
@@ -45,22 +30,32 @@ export class MailService {
     const { html, text } = this.buildVerificationEmail(token, url);
 
     try {
-      await this.transporter.sendMail({
-        from:
-          process.env.MAIL_FROM ?? '"Bengal Booking" <no-reply@evently.local>',
-        to: email,
-        subject: "Verify your Bengal Booking email",
-        text,
-        html,
+      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "api-key": this.apiKey,
+        },
+        body: JSON.stringify({
+          sender: {
+            email: process.env.MAIL_FROM_EMAIL ?? "no-reply@evently.local",
+            name: process.env.MAIL_FROM_NAME ?? "Bengal Booking",
+          },
+          to: [{ email }],
+          subject: "Verify your Bengal Booking email",
+          htmlContent: html,
+          textContent: text,
+        }),
       });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Brevo API error (${response.status}): ${errorBody}`);
+      }
     } catch (error) {
-      console.error(
-        `[MailService] Failed to send verification email to ${email}:`,
-        error,
-      );
-      console.info(
-        `[Bengal Booking] Fallback verification link for ${email}: ${url}`,
-      );
+      console.error(`[MailService] Failed to send verification email to ${email}:`, error);
+      console.info(`[Bengal Booking] Fallback verification link for ${email}: ${url}`);
     }
   }
 
