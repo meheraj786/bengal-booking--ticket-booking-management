@@ -241,13 +241,13 @@ export default function Navbar() {
               <div className="flex items-center gap-2.5">
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium !text-slate-300 hover:!text-white transition-colors"
+                  className="md:px-4 px-2 md:py-2 py-1 text-sm font-medium !text-slate-300 hover:!text-white transition-colors"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/register"
-                  className="px-4 py-2 text-sm font-semibold !text-white bg-gradient-to-r from-[#ff6b4a] to-[#ff4a2d] hover:brightness-105 active:scale-95 rounded-xl shadow-[0_4px_15px_rgba(255,87,51,0.35)] transition-all"
+                  className="md:px-4 px-2 md:py-2 py-1 text-sm font-semibold !text-white bg-gradient-to-r from-[#ff6b4a] to-[#ff4a2d] hover:brightness-105 active:scale-95 rounded-xl shadow-[0_4px_15px_rgba(255,87,51,0.35)] transition-all"
                 >
                   Sign up
                 </Link>
