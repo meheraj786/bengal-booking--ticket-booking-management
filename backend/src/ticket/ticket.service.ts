@@ -5,7 +5,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
-import { TicketStatus } from "@prisma/client";
+import { EventStatus, TicketStatus } from "@prisma/client";
 import { PrismaService } from "../infrastructure/prisma.service";
 import { AuthUser } from "../common/auth-user";
 import { CreateTicketDto, UpdateTicketDto } from "./ticket.dto";
@@ -15,7 +15,11 @@ import { getPagination, paginated } from "../common/pagination";
 export class TicketService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  async list(eventId: string, user: AuthUser, query: { page?: string; limit?: string } = {}) {
+  async list(
+    eventId: string,
+    user: AuthUser,
+    query: { page?: string; limit?: string } = {},
+  ) {
     const event = await this.prisma.event.findUnique({
       where: { id: eventId },
     });
@@ -27,17 +31,18 @@ export class TicketService {
     const where = { eventId };
     const [data, total] = await this.prisma.$transaction([
       this.prisma.ticket.findMany({
-      where: { eventId },
-      skip, take: limit,
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        price: true,
-        status: true,
-        createdAt: true,
-      },
-      orderBy: { id: "asc" },
+        where: { eventId },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          status: true,
+          createdAt: true,
+        },
+        orderBy: { id: "asc" },
       }),
       this.prisma.ticket.count({ where }),
     ]);
@@ -54,7 +59,9 @@ export class TicketService {
 
     const quantity = Number(dto.quantity);
     if (!Number.isInteger(quantity) || quantity < 1) {
-      throw new BadRequestException("Ticket quantity must be a positive whole number");
+      throw new BadRequestException(
+        "Ticket quantity must be a positive whole number",
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -67,6 +74,12 @@ export class TicketService {
           status: TicketStatus.AVAILABLE,
         })),
       });
+      if (event.status === EventStatus.DRAFT) {
+        await tx.event.update({
+          where: { id: eventId },
+          data: { status: EventStatus.PUBLISHED },
+        });
+      }
 
       return createdTickets;
     });
@@ -111,7 +124,9 @@ export class TicketService {
     if (user.role !== "SUPER_ADMIN" && ticket.event.sellerId !== user.id)
       throw new ForbiddenException("You do not own this ticket");
     if (ticket.status !== TicketStatus.AVAILABLE || ticket.bookingId)
-      throw new BadRequestException("Booked or unavailable tickets cannot be deleted");
+      throw new BadRequestException(
+        "Booked or unavailable tickets cannot be deleted",
+      );
     return this.prisma.ticket.delete({ where: { id } });
   }
 }
