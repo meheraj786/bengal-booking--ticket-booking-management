@@ -36,12 +36,22 @@ export default function EventDetailsPage() {
   const { user } = useAuthStore();
   const { data: event, isLoading, error } = useEventBySlug(eventSlug);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [buyer, setBuyer] = useState({ buyerName: "", buyerAddress: "", buyerPhone: "" });
+  const [buyer, setBuyer] = useState({
+    buyerName: "",
+    buyerAddress: "",
+    buyerPhone: "",
+  });
 
   const ticketGroups = useMemo(() => {
     const groups = new Map<
       string,
-      { id: string; name: string; description: string; price: string; available: number }
+      {
+        id: string;
+        name: string;
+        description: string;
+        price: string;
+        available: number;
+      }
     >();
     for (const ticket of event?.tickets ?? []) {
       const key = `${ticket.name}:${ticket.price}:${ticket.description}`;
@@ -61,8 +71,13 @@ export default function EventDetailsPage() {
     return [...groups.values()];
   }, [event?.tickets]);
 
-  const totalQuantity = Object.values(quantities).reduce((sum, value) => sum + value, 0);
-  const selectedTickets = ticketGroups.filter((ticket) => (quantities[ticket.id] ?? 0) > 0);
+  const totalQuantity = Object.values(quantities).reduce(
+    (sum, value) => sum + value,
+    0,
+  );
+  const selectedTickets = ticketGroups.filter(
+    (ticket) => (quantities[ticket.id] ?? 0) > 0,
+  );
   const total = selectedTickets.reduce(
     (sum, ticket) => sum + Number(ticket.price) * (quantities[ticket.id] ?? 0),
     0,
@@ -101,11 +116,17 @@ export default function EventDetailsPage() {
             <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 sm:h-16 sm:w-16">
               <AlertCircle className="h-7 w-7 text-red-500 sm:h-8 sm:w-8" />
             </div>
-            <p className="mb-1.5 text-base font-semibold sm:text-lg">Event not found</p>
+            <p className="mb-1.5 text-base font-semibold sm:text-lg">
+              Event not found
+            </p>
             <p className="mb-7 text-xs text-muted-foreground sm:text-sm">
               This event may have been removed or is not published yet.
             </p>
-            <Button asChild size="lg" className="w-full gap-2 rounded-full sm:w-auto">
+            <Button
+              asChild
+              size="lg"
+              className="w-full gap-2 rounded-full sm:w-auto"
+            >
               <Link href="/explore">
                 <ArrowLeft className="h-4 w-4" />
                 Browse events
@@ -142,7 +163,11 @@ export default function EventDetailsPage() {
   };
 
   const isFormValid =
-    user?.isVerified && !!totalQuantity && !!buyer.buyerName && !!buyer.buyerPhone && !!buyer.buyerAddress;
+    user?.isVerified &&
+    !!totalQuantity &&
+    !!buyer.buyerName &&
+    !!buyer.buyerPhone &&
+    !!buyer.buyerAddress;
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden bg-slate-50 pb-16">
@@ -161,7 +186,13 @@ export default function EventDetailsPage() {
           <Card className="overflow-hidden rounded-2xl border-none shadow-sm sm:rounded-3xl">
             <div className="relative aspect-[16/9] w-full bg-slate-200 sm:aspect-[16/8]">
               {event.coverImage ? (
-                <Image src={event.coverImage} alt={event.title} fill className="object-cover" priority />
+                <Image
+                  src={event.coverImage}
+                  alt={event.title}
+                  fill
+                  className="object-cover"
+                  priority
+                />
               ) : (
                 <div className="flex h-full items-center justify-center text-slate-400">
                   <TicketIcon className="h-10 w-10" />
@@ -185,9 +216,27 @@ export default function EventDetailsPage() {
                     <Calendar className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-muted-foreground">Date & Time</p>
+                    <p className="text-xs text-muted-foreground">
+                      Date & Time (Start)
+                    </p>
                     <p className="break-words text-xs font-medium text-slate-800 sm:text-sm">
                       {new Date(event.startAt).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/60 p-3 sm:rounded-2xl sm:p-3.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary sm:rounded-xl">
+                    <Calendar className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground">
+                      Date & Time (End)
+                    </p>
+                    <p className="break-words text-xs font-medium text-slate-800 sm:text-sm">
+                      {new Date(event.endAt).toLocaleString(undefined, {
                         dateStyle: "medium",
                         timeStyle: "short",
                       })}
@@ -211,7 +260,9 @@ export default function EventDetailsPage() {
               <Separator />
 
               <div className="min-w-0">
-                <h2 className="mb-2 text-sm font-semibold text-slate-900">About this event</h2>
+                <h2 className="mb-2 text-sm font-semibold text-slate-900">
+                  About this event
+                </h2>
                 <p className="break-words whitespace-pre-line text-xs leading-relaxed text-slate-600 sm:text-sm sm:leading-6">
                   {event.description}
                 </p>
@@ -233,7 +284,12 @@ export default function EventDetailsPage() {
                   <div className="flex items-center gap-3">
                     <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-slate-200 ring-2 ring-slate-100 sm:h-12 sm:w-12">
                       {event.seller.image ? (
-                        <Image src={event.seller.image} alt={event.seller.name} fill className="object-cover" />
+                        <Image
+                          src={event.seller.image}
+                          alt={event.seller.name}
+                          fill
+                          className="object-cover"
+                        />
                       ) : (
                         <span className="flex h-full items-center justify-center text-base font-bold text-slate-500 sm:text-lg">
                           {event.seller.name.charAt(0).toUpperCase()}
@@ -241,8 +297,12 @@ export default function EventDetailsPage() {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-muted-foreground">Event organizer</p>
-                      <p className="truncate font-semibold text-slate-900">{event.seller.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Event organizer
+                      </p>
+                      <p className="truncate font-semibold text-slate-900">
+                        {event.seller.name}
+                      </p>
                     </div>
                   </div>
                 </>
@@ -256,7 +316,9 @@ export default function EventDetailsPage() {
             <CardContent className="space-y-5 p-4 sm:p-6 lg:p-7">
               <div className="flex items-center gap-2">
                 <TicketIcon className="h-5 w-5 shrink-0 text-primary" />
-                <h2 className="text-base font-bold text-slate-900 sm:text-lg">Choose your ticket</h2>
+                <h2 className="text-base font-bold text-slate-900 sm:text-lg">
+                  Choose your ticket
+                </h2>
               </div>
 
               {user && !user.isVerified && (
@@ -264,7 +326,10 @@ export default function EventDetailsPage() {
                   <AlertCircle className="h-4 w-4 shrink-0 !text-amber-600" />
                   <AlertDescription className="text-xs leading-relaxed text-amber-900 sm:text-sm">
                     Verify your email before booking tickets.{" "}
-                    <Link className="font-semibold underline underline-offset-2" href="/verify-email">
+                    <Link
+                      className="font-semibold underline underline-offset-2"
+                      href="/verify-email"
+                    >
                       Verify email with OTP
                     </Link>
                   </AlertDescription>
@@ -274,7 +339,9 @@ export default function EventDetailsPage() {
               {ticketGroups.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-slate-200 py-8 text-center sm:py-10">
                   <TicketIcon className="mx-auto mb-2 h-6 w-6 text-slate-300" />
-                  <p className="text-xs text-muted-foreground sm:text-sm">No tickets are currently available.</p>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
+                    No tickets are currently available.
+                  </p>
                 </div>
               ) : (
                 <>
@@ -318,10 +385,14 @@ export default function EventDetailsPage() {
                             <span
                               className={cn(
                                 "text-xs font-medium",
-                                isSoldOut ? "text-red-500" : "text-muted-foreground",
+                                isSoldOut
+                                  ? "text-red-500"
+                                  : "text-muted-foreground",
                               )}
                             >
-                              {isSoldOut ? "Sold out" : `${ticket.available} available`}
+                              {isSoldOut
+                                ? "Sold out"
+                                : `${ticket.available} available`}
                             </span>
                             <div className="flex items-center gap-1.5 sm:gap-2">
                               <Button
@@ -332,13 +403,18 @@ export default function EventDetailsPage() {
                                 onClick={() =>
                                   setQuantities((current) => ({
                                     ...current,
-                                    [ticket.id]: Math.max(0, (current[ticket.id] ?? 0) - 1),
+                                    [ticket.id]: Math.max(
+                                      0,
+                                      (current[ticket.id] ?? 0) - 1,
+                                    ),
                                   }))
                                 }
                               >
                                 <Minus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                               </Button>
-                              <span className="min-w-5 text-center text-xs font-semibold sm:text-sm">{qty}</span>
+                              <span className="min-w-5 text-center text-xs font-semibold sm:text-sm">
+                                {qty}
+                              </span>
                               <Button
                                 variant="outline"
                                 size="icon"
@@ -346,7 +422,8 @@ export default function EventDetailsPage() {
                                 disabled={
                                   isSoldOut ||
                                   qty >= ticket.available ||
-                                  totalQuantity >= (event?.maxTicketsPerBooking ?? 1)
+                                  totalQuantity >=
+                                    (event?.maxTicketsPerBooking ?? 1)
                                 }
                                 onClick={() =>
                                   setQuantities((current) => ({
@@ -367,14 +444,18 @@ export default function EventDetailsPage() {
                   <Separator />
 
                   <div className="space-y-3">
-                    <p className="text-xs font-semibold text-slate-900 sm:text-sm">Buyer information</p>
+                    <p className="text-xs font-semibold text-slate-900 sm:text-sm">
+                      Buyer information
+                    </p>
                     <div className="relative">
                       <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <Input
                         placeholder="Buyer name"
                         className="h-10 pl-9 text-xs sm:text-sm"
                         value={buyer.buyerName}
-                        onChange={(e) => setBuyer({ ...buyer, buyerName: e.target.value })}
+                        onChange={(e) =>
+                          setBuyer({ ...buyer, buyerName: e.target.value })
+                        }
                       />
                     </div>
                     <div className="relative">
@@ -383,7 +464,9 @@ export default function EventDetailsPage() {
                         placeholder="Buyer phone"
                         className="h-10 pl-9 text-xs sm:text-sm"
                         value={buyer.buyerPhone}
-                        onChange={(e) => setBuyer({ ...buyer, buyerPhone: e.target.value })}
+                        onChange={(e) =>
+                          setBuyer({ ...buyer, buyerPhone: e.target.value })
+                        }
                       />
                     </div>
                     <div className="relative">
@@ -392,7 +475,9 @@ export default function EventDetailsPage() {
                         placeholder="Buyer address"
                         className="min-h-[72px] pl-9 text-xs sm:text-sm"
                         value={buyer.buyerAddress}
-                        onChange={(e) => setBuyer({ ...buyer, buyerAddress: e.target.value })}
+                        onChange={(e) =>
+                          setBuyer({ ...buyer, buyerAddress: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -413,7 +498,9 @@ export default function EventDetailsPage() {
                     disabled={!isFormValid}
                   >
                     <TicketIcon className="h-4 w-4" />
-                    {!user?.isVerified ? "Verify email to book" : "Continue to checkout"}
+                    {!user?.isVerified
+                      ? "Verify email to book"
+                      : "Continue to checkout"}
                   </Button>
                 </>
               )}
